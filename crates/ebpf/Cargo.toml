@@ -1,0 +1,25 @@
+[package]
+name = "sentinelx-ebpf"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "eBPF engine and telemetry provider for SentinelX (real kernel instrumentation via Aya)"
+
+[dependencies]
+sentinelx-common.workspace = true
+sentinelx-telemetry.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+async-trait.workspace = true
+thiserror.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+libc.workspace = true
+nix.workspace = true
+aya = "0.14"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }

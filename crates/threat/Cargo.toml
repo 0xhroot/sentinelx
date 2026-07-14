@@ -1,0 +1,22 @@
+[package]
+name = "sentinelx-threat"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Threat engine for SentinelX: security decisions and risk scoring from incidents"
+
+[dependencies]
+sentinelx-common.workspace = true
+sentinelx-core.workspace = true
+sentinelx-incident.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }

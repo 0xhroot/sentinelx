@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: GitHub Discussions
+    url: https://github.com/sentinelx/sentinelx/discussions
+    about: Ask questions, share ideas, or discuss SentinelX
+  - name: Security Vulnerability
+    url: https://github.com/sentinelx/sentinelx/blob/main/SECURITY.md
+    about: Report security vulnerabilities privately (do not open a public issue)

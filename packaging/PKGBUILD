@@ -1,0 +1,57 @@
+# Maintainer: SentinelX Team <team@sentinelx.dev>
+pkgname=sentinelx
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Enterprise Linux Runtime Integrity & Rootkit Detection Platform"
+arch=('x86_64' 'aarch64')
+url="https://github.com/sentinelx/sentinelx"
+license=('GPL-3.0-or-later')
+depends=('openssl' 'sqlite' 'gcc-libs' 'zlib' 'curl' 'glibc')
+makedepends=('cargo' 'npm' 'nodejs' 'git')
+provides=('sentinelx')
+conflicts=('sentinelx-git')
+backup=('etc/sentinelx/sentinelx.toml')
+install=sentinelx.install
+source=("${url}/archive/v${pkgver}/${pkgname}-${pkgver}.tar.gz"
+        'sentinelx.service'
+        'sentinelx.conf')
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP')
+
+prepare() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+
+    cargo fetch --locked
+    cd apps/dashboard
+    npm ci
+}
+
+build() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+
+    cargo build --release --locked
+
+    cd apps/dashboard
+    npm run build
+}
+
+check() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    cargo test --workspace --locked
+}
+
+package() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+
+    install -Dm755 target/release/sentinelx-backend "${pkgdir}/usr/bin/sentinelx-backend"
+    install -Dm755 target/release/sentinelx-cli "${pkgdir}/usr/bin/sentinelx-cli"
+
+    install -Dm644 "${srcdir}/sentinelx.service" "${pkgdir}/usr/lib/systemd/system/sentinelx.service"
+
+    install -Dm644 "${srcdir}/sentinelx.conf" "${pkgdir}/etc/sentinelx/sentinelx.toml"
+
+    install -dm755 "${pkgdir}/var/lib/sentinelx"
+
+    cp -r apps/dashboard/dist "${pkgdir}/usr/share/sentinelx/dashboard"
+}

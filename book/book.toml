@@ -1,0 +1,10 @@
+[book]
+title = "SentinelX Documentation"
+authors = ["SentinelX Team"]
+language = "en"
+src = "src"
+build = "book"
+
+[output.html]
+search = true
+git-repository-url = "https://github.com/sentinelx/sentinelx"

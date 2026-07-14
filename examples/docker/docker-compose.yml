@@ -1,0 +1,77 @@
+version: "3.8"
+
+# SentinelX Production Docker Compose
+# Usage:
+#   docker compose up -d
+#   docker compose logs -f sentinelx
+#
+# Prerequisites:
+#   - Docker 20.10+ and Docker Compose v2+
+#   - Linux host with kernel >= 5.10 (for eBPF features)
+#   - Appropriate host paths must exist before starting
+
+services:
+  sentinelx:
+    image: sentinelx/sentinelx:latest
+    container_name: sentinelx
+    hostname: sentinelx-prod
+    restart: unless-stopped
+    privileged: false
+    cap_add:
+      - SYS_PTRACE
+      - NET_ADMIN
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+
+    ports:
+      - "127.0.0.1:8443:8443"
+
+    environment:
+      - RUST_LOG=info
+      - SENTINELX_HOSTNAME=sentinelx-prod
+      - TZ=UTC
+
+    volumes:
+      - sentinelx-data:/var/lib/sentinelx
+      - sentinelx-logs:/var/log/sentinelx
+      - ./sentinelx.toml:/etc/sentinelx/sentinelx.toml:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:8443/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "1.0"
+        reservations:
+          memory: 128M
+          cpus: "0.25"
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+volumes:
+  sentinelx-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/sentinelx
+  sentinelx-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/log/sentinelx

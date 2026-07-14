@@ -1,0 +1,66 @@
+# SentinelX Code Owners
+# These owners will be automatically requested for review
+# when someone opens a pull request.
+
+# Default owners for everything
+*                           @sentinelx/maintainers
+
+# Core pipeline
+crates/common/              @sentinelx/core-team
+crates/config/              @sentinelx/core-team
+crates/core/                @sentinelx/core-team
+crates/assessment/          @sentinelx/core-team
+crates/evidence/            @sentinelx/core-team
+crates/correlation/         @sentinelx/core-team
+
+# Kernel telemetry
+crates/ebpf/                @sentinelx/kernel-team
+crates/kernel/              @sentinelx/kernel-team
+crates/process/             @sentinelx/kernel-team
+crates/module/              @sentinelx/kernel-team
+crates/network/             @sentinelx/kernel-team
+crates/memory/              @sentinelx/kernel-team
+crates/fanotify/            @sentinelx/kernel-team
+crates/netlink/             @sentinelx/kernel-team
+crates/audit/               @sentinelx/kernel-team
+
+# Detection and response
+crates/detector/            @sentinelx/detection-team
+crates/integrity/           @sentinelx/detection-team
+crates/persistence/         @sentinelx/detection-team
+crates/threat/              @sentinelx/detection-team
+crates/incident/            @sentinelx/detection-team
+crates/response/            @sentinelx/detection-team
+crates/rule_engine/         @sentinelx/detection-team
+
+# Intelligence and behavior
+crates/behavior/            @sentinelx/intel-team
+crates/intelligence/        @sentinelx/intel-team
+crates/forensics/           @sentinelx/intel-team
+crates/timeline/            @sentinelx/intel-team
+
+# Fleet management
+crates/transport/           @sentinelx/fleet-team
+crates/agent/               @sentinelx/fleet-team
+crates/coordinator/         @sentinelx/fleet-team
+crates/fleet/               @sentinelx/fleet-team
+
+# Database and telemetry
+crates/database/            @sentinelx/infra-team
+crates/telemetry/           @sentinelx/infra-team
+
+# Applications
+apps/cli/                   @sentinelx/app-team
+backend/                    @sentinelx/app-team
+
+# Documentation
+docs/                       @sentinelx/docs-team
+*.md                        @sentinelx/docs-team
+
+# CI and packaging
+.github/                    @sentinelx/maintainers
+Dockerfile                  @sentinelx/infra-team
+docker-compose.yml          @sentinelx/infra-team
+Makefile                    @sentinelx/infra-team
+packaging/                  @sentinelx/infra-team
+scripts/                    @sentinelx/infra-team

@@ -1,0 +1,24 @@
+post_install() {
+    echo ""
+    echo "SentinelX has been installed."
+    echo ""
+    echo "Next steps:"
+    echo "  1. Edit /etc/sentinelx/sentinelx.conf to configure SentinelX"
+    echo "  2. Enable and start the service:"
+    echo "     systemctl enable --now sentinelx"
+    echo "  3. Check the service status:"
+    echo "     systemctl status sentinelx"
+    echo "  4. View logs:"
+    echo "     journalctl -u sentinelx -f"
+    echo ""
+    echo "For CLI usage, run: sentinelx-cli --help"
+    echo "For more information, visit: https://github.com/sentinelx/sentinelx"
+    echo ""
+}
+
+post_upgrade() {
+    echo ""
+    echo "SentinelX has been upgraded."
+    echo "Restart the service to apply changes: systemctl restart sentinelx"
+    echo ""
+}

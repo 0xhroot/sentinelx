@@ -1,0 +1,39 @@
+services:
+  sentinelx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sentinelx
+    image: sentinelx:1.0.0
+    restart: unless-stopped
+    ports:
+      - "8443:8443"
+    volumes:
+      - sentinelx-data:/var/lib/sentinelx
+      - ./packaging/sentinelx.conf:/etc/sentinelx/sentinelx.toml:ro
+    environment:
+      - RUST_LOG=info
+      - SENTINELX_CONFIG=/etc/sentinelx/sentinelx.toml
+    cap_add:
+      - NET_ADMIN
+      - SYS_PTRACE
+      - AUDIT_CONTROL
+      - SYSLOG
+    sysctls:
+      - net.ipv4.ip_forward=1
+    networks:
+      - sentinelx-net
+    healthcheck:
+      test: ["CMD", "/usr/bin/sentinelx-cli", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  sentinelx-data:
+    driver: local
+
+networks:
+  sentinelx-net:
+    driver: bridge

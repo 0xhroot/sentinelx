@@ -1,0 +1,127 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/common",
+    "crates/config",
+    "crates/core",
+    "crates/assessment",
+    "crates/database",
+    "crates/telemetry",
+    "crates/detector",
+    "crates/kernel",
+    "crates/process",
+    "crates/network",
+    "crates/module",
+    "crates/memory",
+    "crates/integrity",
+    "crates/persistence",
+    "crates/forensics",
+    "crates/timeline",
+    "crates/correlation",
+    "crates/incident",
+    "crates/threat",
+    "crates/reporting",
+    "crates/response",
+    "crates/ebpf",
+    "crates/evidence",
+    "crates/rule_engine",
+    "crates/fanotify",
+    "crates/audit",
+    "crates/netlink",
+    "crates/behavior",
+    "crates/intelligence",
+    "crates/transport",
+    "crates/agent",
+    "crates/coordinator",
+    "crates/fleet",
+    "apps/cli",
+    "backend",
+    "crates/benchmarks",
+    "crates/integration-tests",
+]
+
+[workspace.package]
+version = "1.0.0"
+edition = "2021"
+rust-version = "1.75"
+license = "GPL-3.0-or-later"
+authors = ["SentinelX Contributors"]
+repository = "https://github.com/sentinelx/sentinelx"
+description = "Enterprise Linux Runtime Integrity & Rootkit Detection Platform"
+
+[workspace.dependencies]
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "registry"] }
+thiserror = "1"
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "macros"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+sha2 = "0.10"
+hex = "0.4"
+clap = { version = "4", features = ["derive", "env"] }
+axum = { version = "0.7", features = ["macros"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+async-trait = "0.1"
+futures = "0.3"
+bytes = "1"
+regex = "1"
+walkdir = "2"
+libc = "0.2"
+nix = { version = "0.29", features = ["signal", "process", "fs", "user"] }
+
+sentinelx-common = { path = "crates/common" }
+sentinelx-core = { path = "crates/core" }
+sentinelx-assessment = { path = "crates/assessment" }
+sentinelx-config = { path = "crates/config" }
+sentinelx-database = { path = "crates/database" }
+sentinelx-telemetry = { path = "crates/telemetry" }
+sentinelx-detector = { path = "crates/detector" }
+sentinelx-kernel = { path = "crates/kernel" }
+sentinelx-process = { path = "crates/process" }
+sentinelx-network = { path = "crates/network" }
+sentinelx-module = { path = "crates/module" }
+sentinelx-memory = { path = "crates/memory" }
+sentinelx-integrity = { path = "crates/integrity" }
+sentinelx-persistence = { path = "crates/persistence" }
+sentinelx-forensics = { path = "crates/forensics" }
+sentinelx-timeline = { path = "crates/timeline" }
+sentinelx-correlation = { path = "crates/correlation" }
+sentinelx-incident = { path = "crates/incident" }
+sentinelx-threat = { path = "crates/threat" }
+sentinelx-reporting = { path = "crates/reporting" }
+sentinelx-response = { path = "crates/response" }
+sentinelx-ebpf = { path = "crates/ebpf" }
+sentinelx-evidence = { path = "crates/evidence" }
+sentinelx-rule-engine = { path = "crates/rule_engine" }
+sentinelx-fanotify = { path = "crates/fanotify" }
+sentinelx-audit = { path = "crates/audit" }
+sentinelx-netlink = { path = "crates/netlink" }
+sentinelx-behavior = { path = "crates/behavior" }
+sentinelx-intelligence = { path = "crates/intelligence" }
+sentinelx-transport = { path = "crates/transport" }
+sentinelx-agent = { path = "crates/agent" }
+sentinelx-coordinator = { path = "crates/coordinator" }
+sentinelx-fleet = { path = "crates/fleet" }
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 2
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = true
+panic = "abort"
+
+[profile.release-dev]
+inherits = "release"
+debug = true
+strip = false

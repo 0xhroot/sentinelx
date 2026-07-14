@@ -1,0 +1,27 @@
+[package]
+name = "sentinelx-process"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Process monitoring and hidden process detection for SentinelX"
+
+[dependencies]
+sentinelx-common.workspace = true
+sentinelx-core.workspace = true
+sentinelx-detector.workspace = true
+sentinelx-evidence.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+sha2.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+async-trait.workspace = true
+chrono.workspace = true
+libc.workspace = true
+uuid.workspace = true
+thiserror.workspace = true
+walkdir.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }

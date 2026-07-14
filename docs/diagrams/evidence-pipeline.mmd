@@ -1,0 +1,92 @@
+graph TB
+    subgraph INPUT["Linux System Input"]
+        PROC["/proc filesystem<br/>Processes, modules, network"]
+        SYS["/sys filesystem<br/>Kernel parameters, modules"]
+        EBPF["eBPF ring buffer<br/>Tracepoint events"]
+        NL["Netlink socket<br/>Route/audit events"]
+        FAN["fanotify<br/>Filesystem events"]
+    end
+
+    subgraph P1["Phase 1: Discovery"]
+        DP["DiscoveryProvider::discover()"]
+        P1_OUT["SentinelObject[]<br/>Canonical ID + ObjectType<br/>Source provider tag"]
+    end
+
+    subgraph P1_PROVIDERS["7 Discovery Providers"]
+        PD["ProcessDiscoveryProvider<br/>/proc scanning"]
+        MD["ModuleDiscoveryProvider<br/>/proc/modules"]
+        ND["NetworkDiscoveryProvider<br/>/proc/net"]
+        KD["KernelDiscoveryProvider<br/>Hardening checks"]
+        MEMD["MemoryDiscoveryProvider<br/>kallsyms, self-maps"]
+        ID["IntegrityDiscoveryProvider<br/>Critical system files"]
+        PRD["PersistenceDiscoveryProvider<br/>systemd, cron, init"]
+    end
+
+    subgraph P2["Phase 2: Metadata Enrichment"]
+        MC["MetadataCollector::enrich()"]
+        P2_OUT["Enriched SentinelObject<br/>Properties, ownership, hashes<br/>Permissions, package info, tags"]
+    end
+
+    subgraph P2_COLLECTORS["7 Metadata Collectors"]
+        MPC["ProcessMetadataCollector<br/>Package info, threads, FDs"]
+        MMC["ModuleMetadataCollector<br/>sysfs/kallsyms cross-ref"]
+        NMC["NetworkMetadataCollector<br/>Hidden/orphaned detection"]
+        KMC["KernelMetadataCollector<br/>Critical finding flags"]
+        MEMC["MemoryMetadataCollector<br/>kallsyms, maps hashing"]
+        IFC["IntegrityMetadataCollector<br/>File hashing"]
+        PRC["PersistenceMetadataCollector<br/>TrustedOS/Package/Unknown"]
+    end
+
+    subgraph P3["Phase 3: Assessment"]
+        OA["ObjectAssessor::assess()"]
+        P3_OUT["AssessmentResult<br/>trust: 0-100<br/>integrity: 0-100<br/>risk: 0-100<br/>reputation: 0-100<br/>confidence: 0.0-1.0"]
+    end
+
+    subgraph P3_ASSESSORS["7 Object Assessors"]
+        PA["ProcessAssessor<br/>Hidden/DKOM/PID hide"]
+        MA["ModuleAssessor<br/>Trust: builtin=Trusted<br/>invalid sig=Blacklisted"]
+        NA["NetworkAssessor<br/>hidden=High<br/>orphaned=Medium"]
+        KA["KernelAssessor<br/>hook=Critical<br/>integrity=Critical"]
+        MEMA["MemoryAssessor<br/>modified=Critical<br/>risk>0.7=Medium"]
+        IFA["IntegrityAssessor<br/>modified=Critical<br/>unreadable=High"]
+        PRA["PersistenceAssessor<br/>Classification-based"]
+    end
+
+    subgraph P4["Phase 4: Evidence Generation"]
+        EG["CoreEvidence Creation"]
+        P4_OUT["CoreEvidence (immutable)<br/>UUID, timestamp, object_id<br/>EvidenceType, severity<br/>metadata_snapshot<br/>assessment_snapshot<br/>related_evidence"]
+    end
+
+    subgraph STORE["Evidence Store"]
+        ES["RwLock<Vec&lt;CoreEvidence&gt;<br/>Indexed storage<br/>Queryable by type/severity"]
+    end
+
+    INPUT --> P1
+    P1 --> P1_OUT
+    P1_PROVIDERS --> DP
+    P1_PROVIDERS --> MD
+    P1_PROVIDERS --> ND
+    P1_PROVIDERS --> KD
+    P1_PROVIDERS --> MEMD
+    P1_PROVIDERS --> ID
+    P1_PROVIDERS --> PRD
+    DP --> P1
+
+    P1_OUT --> P2
+    P2 --> P2_OUT
+    P2_COLLECTORS --> MC
+    MC --> P2
+
+    P2_OUT --> P3
+    P3 --> P3_OUT
+    P3_ASSESSORS --> OA
+    OA --> P3
+
+    P3_OUT --> P4
+    P4 --> P4_OUT
+    P4_OUT --> STORE
+
+    style P1 fill:#e1f5fe
+    style P2 fill:#f3e5f5
+    style P3 fill:#fff3e0
+    style P4 fill:#e8f5e9

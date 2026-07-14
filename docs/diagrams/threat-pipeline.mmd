@@ -1,0 +1,79 @@
+graph TB
+    subgraph INPUT["Pipeline Output"]
+        EVID["CoreEvidence<br/>Immutable evidence records<br/>Metadata + Assessment snapshots"]
+        BEHAVIOR["BehaviorScores<br/>Per-object profiles<br/>11 behavior categories"]
+        INTEL["Threat Intelligence<br/>IoCs, MITRE ATT&CK<br/>YARA, Sigma, CVE"]
+    end
+
+    subgraph CORRELATION["Correlation Engine (sentinelx-correlation)"]
+        GRAPH["InMemoryGraph<br/>GraphNode + GraphEdge<br/>7 Node Types<br/>10 Edge Types"]
+        RULES["TOML Rules Engine<br/>7 Default Rules<br/>Pattern matching"]
+        EC["EvidenceCorrelator<br/>EvidenceNode → Relationships<br/>Rule evaluation<br/>CorrelatedEvidence output"]
+    end
+
+    subgraph GRAPH_TYPES["Graph Model"]
+        direction LR
+        NODES["Node Types<br/>Process, File, Module<br/>Network, Service<br/>Memory, User"]
+        EDGES["Edge Types<br/>Spawned, Opened, Connected<br/>Loaded, Modified, Created<br/>Deleted, Executes<br/>Owns, Inherits"]
+    end
+
+    subgraph RULES_DEF["7 Default Correlation Rules"]
+        R1["kernel_rootkit<br/>T1014 | min: 2 evidence<br/>min_confidence: 0.7"]
+        R2["privilege_escalation_chain<br/>Process + Module + Memory"]
+        R3["network_exfiltration<br/>Network + Process + Persistence"]
+        R4["file_tampering<br/>File + Integrity violations"]
+        R5["memory_manipulation<br/>Memory + Kernel + Process"]
+        R6["multi_indicator_anomaly<br/>3+ indicators in 5 min"]
+        R7["suspicious_persistence<br/>Persistence + Unknown source"]
+    end
+
+    subgraph INCIDENT["Incident Engine (sentinelx-incident)"]
+        INC_CREATE["Create/Update Incidents<br/>Severity: Info→Low→Med→High→Crit"]
+        INC_LIFECYCLE["Incident Lifecycle<br/>Open → Investigating<br/>→ Contained → Resolved<br/>→ Closed"]
+        INC_CHAIN["Attack Chain Reconstruction<br/>AttackChainStep vectors"]
+        INC_MITRE["MITRE ATT&CK Mapping<br/>MitreMapping vectors"]
+    end
+
+    subgraph THREAT["Threat Engine (sentinelx-threat)"]
+        RISK["Weighted Risk Scoring<br/>trust: 0.15, integrity: 0.20<br/>risk: 0.25, reputation: 0.10<br/>evidence_count: 0.10<br/>complexity: 0.10<br/>rule_confidence: 0.10"]
+        SCORE_MAP["Score → Severity<br/>0-20: Info<br/>21-40: Low<br/>41-60: Medium<br/>61-80: High<br/>81-100: Critical"]
+        DECISION["ThreatDecision<br/>severity, confidence<br/>priority: Immediate/High/Normal<br/>/Low/Informational<br/>response recommendation"]
+    end
+
+    subgraph RESPONSE_OUT["Response Trigger"]
+        RESPENGINE["ResponseEngine<br/>PolicyEngine → WorkflowEngine<br/>Safety controls (dry-run)<br/>Audit logging"]
+    end
+
+    subgraph STORAGE["Persistence"]
+        DB_INC["incidents table<br/>status, severity, evidence_ids<br/>attack_chain, mitre_mappings"]
+        DB_THR["threat_decisions table<br/>incident_id, risk_score_*<br/>priority, recommendation"]
+        DB_CORR["correlation_graph table<br/>source_id, target_id<br/>edge_type, properties"]
+    end
+
+    EVID --> EC
+    BEHAVIOR --> EC
+    INTEL --> EC
+
+    EC --> GRAPH
+    GRAPH --> RULES
+    RULES --> EC
+
+    EC --> INC_CREATE
+    INC_CREATE --> INC_LIFECYCLE
+    INC_LIFECYCLE --> INC_CHAIN
+    INC_CHAIN --> INC_MITRE
+
+    INC_MITRE --> RISK
+    RISK --> SCORE_MAP
+    SCORE_MAP --> DECISION
+
+    DECISION --> RESPENGINE
+
+    INC_CREATE --> DB_INC
+    DECISION --> DB_THR
+    GRAPH --> DB_CORR
+
+    style CORRELATION fill:#e8eaf6
+    style INCIDENT fill:#fce4ec
+    style THREAT fill:#fff3e0
+    style RESPONSE_OUT fill:#e8f5e9

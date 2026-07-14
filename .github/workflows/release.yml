@@ -1,0 +1,167 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  CARGO_TERM_COLOR: always
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-linux-amd64:
+    name: Build (x86_64-unknown-linux-gnu)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-gnu
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-release-amd64-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-release-amd64-
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libssl-dev libsqlite3-dev
+
+      - name: Build release binary
+        run: cargo build --release --workspace --target x86_64-unknown-linux-gnu
+
+      - name: Package binary
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          mkdir -p dist/sentinelx-${TAG}-x86_64-unknown-linux-gnu
+          cp target/x86_64-unknown-linux-gnu/release/sentinelx-backend dist/sentinelx-${TAG}-x86_64-unknown-linux-gnu/
+          cp target/x86_64-unknown-linux-gnu/release/sentinelx-cli dist/sentinelx-${TAG}-x86_64-unknown-linux-gnu/
+          cp README.md LICENSE sentinelx.toml dist/sentinelx-${TAG}-x86_64-unknown-linux-gnu/
+          cd dist && tar czf sentinelx-${TAG}-x86_64-unknown-linux-gnu.tar.gz sentinelx-${TAG}-x86_64-unknown-linux-gnu/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-amd64
+          path: dist/*.tar.gz
+
+  build-linux-arm64:
+    name: Build (aarch64-unknown-linux-gnu)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-gnu
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-release-arm64-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-release-arm64-
+
+      - name: Install cross-compilation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu pkg-config
+
+      - name: Install cargo-cross
+        run: cargo install cross
+
+      - name: Build release binary
+        run: cross build --release --workspace --target aarch64-unknown-linux-gnu
+
+      - name: Package binary
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          mkdir -p dist/sentinelx-${TAG}-aarch64-unknown-linux-gnu
+          cp target/aarch64-unknown-linux-gnu/release/sentinelx-backend dist/sentinelx-${TAG}-aarch64-unknown-linux-gnu/
+          cp target/aarch64-unknown-linux-gnu/release/sentinelx-cli dist/sentinelx-${TAG}-aarch64-unknown-linux-gnu/
+          cp README.md LICENSE sentinelx.toml dist/sentinelx-${TAG}-aarch64-unknown-linux-gnu/
+          cd dist && tar czf sentinelx-${TAG}-aarch64-unknown-linux-gnu.tar.gz sentinelx-${TAG}-aarch64-unknown-linux-gnu/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-arm64
+          path: dist/*.tar.gz
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-linux-amd64, build-linux-arm64]
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            dist/sentinelx-*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docker:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: [build-linux-amd64, build-linux-arm64]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -1,0 +1,25 @@
+[package]
+name = "sentinelx-integration-tests"
+version = "0.1.0"
+edition.workspace = true
+publish = false
+description = "Integration and reliability tests for SentinelX"
+
+[dependencies]
+tokio = { version = "1", features = ["full", "test-util", "macros"] }
+tempfile = "3"
+serde_json = "1"
+toml = "0.8"
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "macros"] }
+sentinelx-agent = { workspace = true }
+sentinelx-telemetry = { workspace = true }
+sentinelx-response = { workspace = true }
+sentinelx-config = { workspace = true }
+sentinelx-transport = { workspace = true }
+sentinelx-rule-engine = { workspace = true }
+sentinelx-database = { workspace = true }
+sentinelx-common = { workspace = true }
+
+[[test]]
+name = "reliability"
+path = "src/reliability.rs"

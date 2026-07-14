@@ -1,0 +1,25 @@
+[package]
+name = "sentinelx-telemetry"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Real-time telemetry engine for SentinelX"
+
+[dependencies]
+sentinelx-common.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tracing-appender = "0.2"
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+async-trait.workspace = true
+uuid.workspace = true
+thiserror.workspace = true
+libc.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }
+tempfile = "3"

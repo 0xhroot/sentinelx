@@ -1,0 +1,156 @@
+# SentinelX Custom Response Workflow
+#
+# This file defines response policies loaded by PolicyEngine::from_toml_str().
+# Each policy maps threat severity + confidence to a set of allowed actions.
+# The engine selects the best-matching policy via best_matching_policy().
+#
+# Valid severity thresholds: "info", "low", "medium", "high", "critical"
+# Valid action strings:
+#   alert, log_event, freeze_process, suspend_process, kill_process,
+#   block_pid, block_ip, close_socket, disable_service, unload_module,
+#   collect_binary, collect_memory_dump, collect_open_files,
+#   capture_network_connections, capture_process_tree,
+#   generate_incident_report, notify_dashboard, notify_rest_api,
+#   run_custom_script, block_network, quarantine_file, collect_forensics,
+#   isolate_host, snapshot_memory, dump_process
+
+# ── Policy 1: Critical rootkit / privilege escalation ────────────────────────
+[[policies]]
+name = "critical_host_isolation"
+description = "Aggressively contain critical rootkits and privilege escalation"
+threat_types = ["rootkit", "privilege_escalation", "hook_detected"]
+severity_threshold = "critical"
+confidence_threshold = 0.7
+allowed_actions = [
+  "alert",
+  "log_event",
+  "kill_process",
+  "block_ip",
+  "collect_memory_dump",
+  "capture_process_tree",
+  "capture_network_connections",
+  "generate_incident_report",
+  "notify_dashboard",
+  "quarantine_file",
+  "isolate_host",
+]
+timeout_seconds = 300
+rollback_enabled = false
+approval_required = false
+
+# ── Policy 2: High-severity containment ──────────────────────────────────────
+[[policies]]
+name = "high_threat_containment"
+description = "Contain high-severity threats of any type"
+threat_types = ["*"]
+severity_threshold = "high"
+confidence_threshold = 0.6
+allowed_actions = [
+  "alert",
+  "log_event",
+  "freeze_process",
+  "capture_network_connections",
+  "collect_open_files",
+  "generate_incident_report",
+  "notify_dashboard",
+]
+timeout_seconds = 120
+rollback_enabled = true
+approval_required = false
+
+# ── Policy 3: Medium-severity investigation ──────────────────────────────────
+[[policies]]
+name = "medium_threat_investigation"
+description = "Investigate medium-severity threats with passive collection"
+threat_types = ["*"]
+severity_threshold = "medium"
+confidence_threshold = 0.5
+allowed_actions = [
+  "alert",
+  "log_event",
+  "capture_process_tree",
+  "collect_open_files",
+]
+timeout_seconds = 60
+rollback_enabled = true
+approval_required = false
+
+# ── Policy 4: Low-severity monitoring ────────────────────────────────────────
+[[policies]]
+name = "low_threat_monitoring"
+description = "Log and alert on low-severity anomalies"
+threat_types = ["*"]
+severity_threshold = "low"
+confidence_threshold = 0.3
+allowed_actions = ["alert", "log_event"]
+timeout_seconds = 30
+rollback_enabled = false
+approval_required = false
+
+# ── Policy 5: Custom cryptomining response ───────────────────────────────────
+[[policies]]
+name = "cryptomining_response"
+description = "Detect and contain cryptomining activity"
+threat_types = ["cryptomining", "performance"]
+severity_threshold = "medium"
+confidence_threshold = 0.5
+allowed_actions = [
+  "alert",
+  "log_event",
+  "kill_process",
+  "collect_binary",
+  "capture_process_tree",
+  "generate_incident_report",
+  "notify_dashboard",
+]
+timeout_seconds = 60
+rollback_enabled = false
+approval_required = true
+
+# ── Policy 6: Network-focused response ───────────────────────────────────────
+[[policies]]
+name = "network_threat_response"
+description = "Respond to suspicious network activity and C2 communication"
+threat_types = ["c2_communication", "data_exfiltration", "dns_tunneling"]
+severity_threshold = "high"
+confidence_threshold = 0.65
+allowed_actions = [
+  "alert",
+  "log_event",
+  "block_ip",
+  "close_socket",
+  "block_network",
+  "capture_network_connections",
+  "collect_binary",
+  "generate_incident_report",
+  "notify_dashboard",
+]
+timeout_seconds = 90
+rollback_enabled = true
+approval_required = false
+
+# ── Policy 7: Forensic collection (high-value targets) ──────────────────────
+[[policies]]
+name = "forensic_collection"
+description = "Deep forensic collection for critical incidents requiring manual review"
+threat_types = ["*"]
+severity_threshold = "critical"
+confidence_threshold = 0.9
+allowed_actions = [
+  "alert",
+  "log_event",
+  "freeze_process",
+  "collect_memory_dump",
+  "collect_binary",
+  "collect_open_files",
+  "capture_network_connections",
+  "capture_process_tree",
+  "collect_forensics",
+  "snapshot_memory",
+  "dump_process",
+  "generate_incident_report",
+  "notify_dashboard",
+]
+timeout_seconds = 600
+rollback_enabled = false
+approval_required = true

@@ -1,0 +1,76 @@
+graph TB
+    subgraph KERNEL["Kernel Space"]
+        direction LR
+        EBPF["eBPF Programs<br/>(Aya 0.14)<br/>Tracepoints, Kprobes, XDP"]
+        FAN["fanotify<br/>FAN_ACCESS, FAN_OPEN<br/>FAN_MODIFY, FAN_DELETE"]
+        NETLINK["Netlink Sockets<br/>NETLINK_ROUTE<br/>NETLINK_AUDIT"]
+        PROC["/proc Filesystem<br/>/proc/modules<br/>/proc/net, /proc/self/maps"]
+    end
+
+    subgraph TELEMETRY["Telemetry Layer"]
+        direction LR
+        PM["ProviderManager<br/>Capability Detection<br/>Fallback Strategy"]
+        TE["TelemetryEngine<br/>EventNormalizer<br/>34 Event Types"]
+        TB["TelemetryBus<br/>mpsc + broadcast<br/>50K buffer, Rate Limiting"]
+    end
+
+    subgraph PIPELINE["Evidence-Driven Pipeline"]
+        direction LR
+        DISC["Discovery Layer<br/>7 Providers<br/>Process, Module, Network<br/>Persistence, Kernel, Memory, Integrity"]
+        META["Metadata Layer<br/>7 Collectors<br/>Properties, Ownership, Hashes<br/>Permissions, Package Info, Tags"]
+        ASSESS["Assessment Layer<br/>7 Assessors<br/>Trust, Integrity, Risk<br/>Reputation (0-100)"]
+        EVID["Evidence Generation<br/>CoreEvidence<br/>Immutable Records<br/>Metadata + Assessment Snapshots"]
+    end
+
+    subgraph ANALYSIS["Analysis Engines"]
+        direction LR
+        CORR["CorrelationEngine<br/>InMemoryGraph<br/>TOML Rules<br/>7 Default Rules"]
+        INC["IncidentEngine<br/>Incident Lifecycle<br/>Attack Chain Mapping<br/>MITRE ATT&CK"]
+        THREAT["ThreatEngine<br/>Weighted Risk Scoring<br/>Severity Classification<br/>ThreatDecision Output"]
+        BEHAVIOR["BehaviorEngine<br/>Per-Object Profiling<br/>11 Behavior Categories<br/>TOML Rules"]
+        INTEL["IntelligenceEngine<br/>IoCs, MITRE ATT&CK<br/>YARA, Sigma Rules<br/>CVE Tracking"]
+    end
+
+    subgraph RESPONSE["Response Engine"]
+        direction LR
+        PE["PolicyEngine<br/>Severity Policies<br/>Confidence Thresholds"]
+        WE["WorkflowEngine<br/>Predefined Workflows<br/>critical_isolation<br/>standard_containment"]
+        RA["Response Actions<br/>Alert, Kill, Block<br/>Quarantine, Isolate<br/>Forensics, Dump"]
+        AUDIT["AuditLog<br/>Action History<br/>Rollback Status<br/>Dry Run Support"]
+    end
+
+    subgraph EXTERNAL["External Interfaces"]
+        direction LR
+        CLI["sentinelx-cli<br/>35+ Subcommands"]
+        REST["REST API<br/>Axum 0.7<br/>OpenAPI + CORS"]
+        DASH["Dashboard<br/>React 18 SPA<br/>TypeScript + Tailwind"]
+    end
+
+    subgraph FLEET["Fleet Management"]
+        direction LR
+        FM["FleetManager<br/>Agent Lifecycle<br/>Remote Actions<br/>Policy Distribution"]
+        COORD["CoordinatorEngine<br/>Registration<br/>Heartbeat Tracking<br/>Health Monitoring"]
+        TRANSPORT["Transport Layer<br/>TLS/mTLS (rustls)<br/>Gzip Compression<br/>Length-Prefixed Framing"]
+        AGENT["SentinelX Agents<br/>Heartbeat (30s)<br/>Local Pipeline<br/>Remote Execution"]
+    end
+
+    subgraph STORAGE["Persistence"]
+        DB["SQLite (WAL mode)<br/>23 Tables<br/>Evidence, Incidents<br/>Telemetry, Fleet"]
+    end
+
+    KERNEL --> TELEMETRY
+    TELEMETRY --> PIPELINE
+    PIPELINE --> ANALYSIS
+    ANALYSIS --> RESPONSE
+    ANALYSIS --> STORAGE
+    RESPONSE --> STORAGE
+    EXTERNAL --> REST
+    REST --> PIPELINE
+    REST --> ANALYSIS
+    REST --> RESPONSE
+    CLI --> REST
+    DASH --> REST
+    FLEET --> TRANSPORT
+    TRANSPORT --> AGENT
+    COORD --> TRANSPORT
+    FM --> COORD

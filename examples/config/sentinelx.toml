@@ -1,0 +1,124 @@
+# SentinelX Configuration File
+# Place at: ~/.config/sentinelx/sentinelx.toml or /etc/sentinelx/sentinelx.toml
+# All fields shown below with their default values.
+
+# ── General Settings ─────────────────────────────────────────────────────────
+[general]
+# Hostname of this SentinelX instance (defaults to system hostname)
+hostname = "sentinelx-prod-01"
+
+# How often (in seconds) to run detection scans in monitor mode.
+# Must be > 0. Default: 60
+scan_interval_seconds = 60
+
+# Whether to establish a behavioral baseline on first start.
+# Recommended: true for new deployments.
+baseline_on_start = true
+
+# Hard memory cap in MB. SentinelX will refuse to exceed this.
+# Must be between 1 and 1024. Default: 150
+max_memory_mb = 150
+
+# Maximum CPU percentage SentinelX may consume.
+# Must be between 0 and 100. Default: 3.0
+max_cpu_percent = 3.0
+
+# ── Detection Settings ───────────────────────────────────────────────────────
+[detection]
+# List of detector modules to enable. Available detectors:
+#   kernel_integrity, hidden_process, hidden_module, hidden_connection,
+#   hook_detection, memory_integrity, persistence, privilege_escalation
+enabled_detectors = [
+  "kernel_integrity",
+  "hidden_process",
+  "hidden_module",
+  "hidden_connection",
+  "hook_detection",
+  "memory_integrity",
+  "persistence",
+  "privilege_escalation",
+]
+
+# Minimum severity to report. Options: info, low, medium, high, critical
+severity_threshold = "low"
+
+# Map detected threats to MITRE ATT&CK techniques automatically
+mitre_attack_mapping = true
+
+# Collect forensic evidence alongside detections
+evidence_collection = true
+
+# ── Monitoring Settings ──────────────────────────────────────────────────────
+[monitoring]
+# Toggle individual subsystem monitors
+process_monitoring = true
+network_monitoring = true
+module_monitoring = true
+memory_monitoring = true
+syscall_monitoring = true
+file_integrity_monitoring = true
+
+# ── Storage Settings ─────────────────────────────────────────────────────────
+[storage]
+# Path to the SQLite database file
+database_path = "/var/lib/sentinelx/sentinelx.db"
+
+# Directory to store collected forensic evidence
+evidence_path = "/var/lib/sentinelx/evidence"
+
+# Directory for SentinelX log files
+log_path = "/var/log/sentinelx"
+
+# Number of days to retain events and evidence before cleanup
+retention_days = 90
+
+# Maximum number of events to keep in the database
+max_events = 1000000
+
+# ── API Server Settings ──────────────────────────────────────────────────────
+[api]
+# Enable the REST API server
+enabled = true
+
+# Bind address for the API server
+host = "127.0.0.1"
+
+# Port for the API server (must not be 0)
+port = 8443
+
+# Enable TLS (requires tls_cert_path and tls_key_path in packaging config)
+tls_enabled = false
+
+# Allowed CORS origins for the dashboard / external tools
+cors_origins = [
+  "http://localhost:3000",
+  "http://localhost:8080",
+]
+
+# ── Logging Settings ─────────────────────────────────────────────────────────
+[logging]
+# Log level: trace, debug, info, warn, error
+level = "info"
+
+# Output format: "pretty" (human-readable) or "compact"
+format = "pretty"
+
+# Write logs to the configured log_path
+file_output = true
+
+# Output logs as JSON (useful for log aggregation pipelines)
+json_format = false
+
+# ── eBPF Settings ────────────────────────────────────────────────────────────
+[ebpf]
+# Enable the eBPF kernel sensor (requires root / CAP_BPF)
+enabled = true
+
+# Size of the eBPF hash map (number of entries)
+map_size = 10240
+
+# Number of perf buffer pages for kernel-to-user event delivery
+perf_buffer_pages = 64
+
+# Rate limit for kernel events per second
+max_events_per_second = 10000

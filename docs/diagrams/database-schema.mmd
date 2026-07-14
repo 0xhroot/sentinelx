@@ -1,0 +1,377 @@
+erDiagram
+    events {
+        text id PK
+        text timestamp
+        text kind
+        text source
+        text severity
+        text category
+        text title
+        text description
+        text data
+        text created_at
+    }
+
+    processes {
+        int pid PK
+        int ppid
+        text name
+        text binary_path
+        int uid
+        text user_name
+        text start_time
+        text status
+        text hash
+        int namespace_pid
+        int namespace_net
+        int namespace_mnt
+        text first_seen
+        text last_seen
+    }
+
+    kernel_modules {
+        text name PK
+        int size
+        int load_address
+        text state
+        int ref_count
+        text version
+        text license
+        text hash
+        int signature_valid
+        text source
+        text first_seen
+        text last_seen
+    }
+
+    network_connections {
+        int id PK
+        text local_ip
+        int local_port
+        text remote_ip
+        int remote_port
+        text protocol
+        text state
+        int pid
+        int inode
+        int uid
+        text process_name
+        text process_hash
+        text first_seen
+        text last_seen
+    }
+
+    integrity_baselines {
+        int id PK
+        text path
+        text hash
+        int size
+        int permissions
+        int owner
+        int group
+        text created_at
+    }
+
+    threat_events {
+        text id PK
+        text timestamp
+        text severity
+        text category
+        text title
+        text description
+        text evidence
+        text mitre_attack
+        text source_detector
+        int process_pid
+        text process_name
+        text hash
+        text tags
+        int acknowledged
+        text created_at
+    }
+
+    forensic_snapshots {
+        text id PK
+        text timestamp
+        text hostname
+        text kernel_version
+        text data
+        text created_at
+    }
+
+    scan_history {
+        int id PK
+        text scan_type
+        text started_at
+        text completed_at
+        int threats_found
+        text status
+    }
+
+    evidence {
+        text id PK
+        text timestamp
+        text evidence_type
+        text severity
+        text source
+        text description
+        text data
+        text tags
+        real confidence
+        text related_evidence
+        text created_at
+    }
+
+    assessment_results {
+        text id PK
+        text object_id
+        text timestamp
+        int trust
+        int integrity
+        int risk
+        int reputation
+        real confidence
+        text reasons
+        text warnings
+        text metadata_references
+        int version
+        text created_at
+    }
+
+    incidents {
+        text id PK
+        text title
+        text description
+        text status
+        text severity
+        real confidence
+        text created_at
+        text updated_at
+        text evidence_ids
+        text object_ids
+        text assessment_ids
+        text related_processes
+        text related_files
+        text related_modules
+        text attack_chain
+        text mitre_mappings
+        text recommended_response
+        text tags
+        text metadata
+    }
+
+    threat_decisions {
+        text id PK
+        text incident_id FK
+        text severity
+        real risk_score_trust
+        real risk_score_integrity
+        real risk_score_risk
+        real risk_score_reputation
+        real risk_score_evidence_count
+        real risk_score_incident_complexity
+        real risk_score_rule_confidence
+        real risk_score_final
+        real confidence
+        text priority
+        text mitre_mappings
+        text description
+        text recommendation
+        text response_plan
+        text created_at
+        text tags
+        text metadata
+    }
+
+    correlation_graph {
+        int id PK
+        text source_id
+        text target_id
+        text edge_type
+        text properties
+        text created_at
+    }
+
+    response_audit {
+        text id PK
+        text timestamp
+        text threat_id
+        text workflow_name
+        text action_type
+        text action_params
+        text result
+        int duration_ms
+        text errors
+        text rollback_status
+        int dry_run
+        text created_at
+    }
+
+    telemetry_events {
+        text id PK
+        text timestamp
+        text provider
+        text category
+        text event_type
+        int pid
+        int uid
+        text namespace
+        text container
+        text object_id
+        text metadata
+        text created_at
+    }
+
+    behavior_profiles {
+        text id PK
+        text object_id
+        text first_seen
+        text last_seen
+        int execution_count
+        int connection_count
+        int privilege_changes
+        int persistence_events
+        int integrity_violations
+        text risk_trend
+        text confidence_trend
+        real historical_score
+        text categories
+        text metadata
+        text created_at
+    }
+
+    iocs {
+        text id PK
+        text ioc_type
+        text value
+        text severity
+        real confidence
+        text source
+        text description
+        text tags
+        text first_seen
+        text last_seen
+        text expiry
+        text metadata
+        text created_at
+    }
+
+    yara_rules {
+        text id PK
+        text name
+        text description
+        text author
+        text severity
+        text tags
+        text rule_content
+        int enabled
+        text created_at
+    }
+
+    sigma_rules {
+        text id PK
+        text name
+        text description
+        text author
+        text severity
+        text tags
+        text logsource_category
+        text logsource_product
+        text logsource_service
+        text detection_condition
+        text detection_fields
+        text falsepositives
+        int enabled
+        text created_at
+    }
+
+    cves {
+        text id PK
+        text description
+        text severity
+        real cvss_score
+        text affected_products
+        text published_at
+        text references_list
+    }
+
+    fleet_agents {
+        text id PK
+        text hostname
+        text version
+        text kernel
+        text distribution
+        text architecture
+        text status
+        text registered_at
+        text last_heartbeat
+        int events_received
+        int incidents_received
+        int policies_sent
+        int actions_sent
+        text created_at
+    }
+
+    fleet_health {
+        int id PK
+        text agent_id FK
+        text timestamp
+        real cpu_percent
+        int memory_used_bytes
+        int memory_total_bytes
+        int disk_used_bytes
+        int disk_total_bytes
+        real load_avg_1
+        real load_avg_5
+        real load_avg_15
+        int active_telemetry_providers
+        int total_events
+        int total_threats
+        int total_incidents
+        text created_at
+    }
+
+    fleet_policies {
+        text id PK
+        text name
+        text policy_type
+        text config
+        int version
+        int enabled
+        text distributed_to
+        text created_at
+    }
+
+    remote_actions {
+        text id PK
+        text agent_id FK
+        text action_type
+        text params
+        text status
+        text result
+        text error
+        int duration_ms
+        text created_at
+        text completed_at
+    }
+
+    heartbeat_history {
+        int id PK
+        text agent_id FK
+        text timestamp
+        text status
+        real cpu_percent
+        int memory_used_bytes
+        int memory_total_bytes
+        int total_events
+        int total_threats
+        int total_incidents
+        text created_at
+    }
+
+    incidents ||--o{ threat_decisions : "has"
+    incidents ||--o{ response_audit : "triggers"
+    fleet_agents ||--o{ fleet_health : "reports"
+    fleet_agents ||--o{ remote_actions : "executes"
+    fleet_agents ||--o{ heartbeat_history : "sends"
+    threat_events ||--o{ response_audit : "responded_by"

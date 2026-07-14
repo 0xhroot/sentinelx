@@ -1,0 +1,110 @@
+graph TB
+    subgraph DASHBOARD["Fleet Dashboard (React SPA)"]
+        D_OVERVIEW["Fleet Overview<br/>Agent counts, stats, uptime"]
+        D_AGENTS["Agent List<br/>Status, hostname, version"]
+        D_POLICIES["Policy Manager<br/>Create, distribute, enable"]
+        D_ACTIONS["Remote Response Console<br/>Execute actions on agents"]
+    end
+
+    subgraph API["REST API (Axum)"]
+        API_F["GET /api/fleet<br/>Fleet overview"]
+        API_A["GET /api/fleet/agents<br/>Agent list"]
+        API_AP["POST /api/fleet/agents/{id}/deregister"]
+        API_H["POST /api/fleet/heartbeat"]
+        API_P["GET/POST /api/fleet/policies"]
+        API_R["GET/POST /api/fleet/actions"]
+        API_S["GET /api/fleet/stats"]
+    end
+
+    subgraph FM["FleetManager (sentinelx-fleet)"]
+        FM_REG["Agent Registration<br/>Register, track, unregister"]
+        FM_HB["Heartbeat Processing<br/>Route to coordinator"]
+        FM_ACT["Action Management<br/>Create → pending → completed/failed"]
+        FM_DIST["Policy Distribution<br/>Delegate to coordinator"]
+        FM_OVERVIEW["Fleet Overview<br/>Aggregate stats across agents"]
+        FM_EVENTS["Event System<br/>AgentRegistered, AgentHeartbeat<br/>ActionRequested, ActionCompleted"]
+    end
+
+    subgraph COORD["CoordinatorEngine (sentinelx-coordinator)"]
+        COORD_REG["Agent Records<br/>Registration tracking"]
+        COORD_HB["Heartbeat History<br/>Stale agent detection"]
+        COORD_POL["Policy Records<br/>Version tracking"]
+        COORD_INC["Incident Aggregation<br/>Agent → Coordinator"]
+        COORD_STATS["Stats Collection<br/>AtomicU64 counters"]
+        COORD_HEALTH["Health Status Logic<br/>Healthy: within timeout<br/>Degraded: 1-3x timeout<br/>Offline: >3x timeout"]
+        COORD_BCAST["Event Broadcasting<br/>tokio::sync::broadcast"]
+    end
+
+    subgraph TRANSPORT["Transport Layer (sentinelx-transport)"]
+        T_TLS["TLS/mTLS<br/>tokio-rustls + rustls<br/>Self-signed CA support"]
+        T_FRAMING["Wire Format<br/>[4 bytes LE length]<br/>[JSON payload]"]
+        T_COMPRESS["Gzip Compression<br/>Payloads > 1KB"]
+        T_RETRY["Retry Logic<br/>Configurable attempts<br/>Background reconnector"]
+        T_ACK["Message Acknowledgement<br/>Registration, Policy<br/>RemoteAction require ack"]
+        T_NEGOTIATE["Version Negotiation<br/>Protocol version check"]
+    end
+
+    subgraph AGENTS["SentinelX Agents"]
+        subgraph AGENT_A["Agent A (Host: web-01)"]
+            AA_ENGINE["AgentEngine<br/>Heartbeat, Policies<br/>Actions, Telemetry"]
+            AA_PIPELINE["Local Pipeline<br/>Discovery → Evidence"]
+            AA_DETECT["Detection<br/>7 Scanners"]
+            AA_RESP["Response<br/>Local execution"]
+        end
+        subgraph AGENT_B["Agent B (Host: db-01)"]
+            AB_ENGINE["AgentEngine"]
+            AB_PIPELINE["Local Pipeline"]
+            AB_DETECT["Detection"]
+            AB_RESP["Response"]
+        end
+        subgraph AGENT_C["Agent C (Host: api-01)"]
+            AC_ENGINE["AgentEngine"]
+            AC_PIPELINE["Local Pipeline"]
+            AC_DETECT["Detection"]
+            AC_RESP["Response"]
+        end
+    end
+
+    subgraph MESSAGES["Message Protocol (12 Types)"]
+        direction LR
+        MSG_REG["Registration / RegistrationAck<br/>Agent ↔ Coordinator lifecycle"]
+        MSG_HB["Heartbeat / HeartbeatAck<br/>Health reporting (30s interval)"]
+        MSG_POL["Policy / PolicyAck<br/>Policy distribution"]
+        MSG_ACT["RemoteAction / RemoteActionResult<br/>Remote command execution"]
+        MSG_INC["Incident / Threat<br/>Agent → Coordinator reporting"]
+        MSG_PING["VersionNegotiation / Ping / Pong<br/>Protocol compatibility"]
+    end
+
+    subgraph SYSTEM_INFO["Agent System Detection"]
+        SI_HOST["/etc/hostname<br/>Hostname"]
+        SI_KERN["/proc/version<br/>Kernel version"]
+        SI_DIST["/etc/os-release<br/>Distribution"]
+        SI_MEM["/proc/meminfo<br/>Memory stats"]
+        SI_LOAD["/proc/loadavg<br/>Load averages"]
+    end
+
+    DASHBOARD --> API
+    API --> FM
+    FM --> COORD
+    COORD --> TRANSPORT
+    TRANSPORT --> AGENTS
+
+    COORD_REG --> COORD
+    COORD_HB --> COORD
+    COORD_POL --> COORD
+    COORD_INC --> COORD
+    COORD_STATS --> COORD
+    COORD_HEALTH --> COORD
+
+    T_TLS --> TRANSPORT
+    T_FRAMING --> TRANSPORT
+    T_COMPRESS --> TRANSPORT
+    T_RETRY --> TRANSPORT
+    T_ACK --> TRANSPORT
+    T_NEGOTIATE --> TRANSPORT
+
+    style DASHBOARD fill:#e3f2fd
+    style FM fill:#e8eaf6
+    style COORD fill:#f3e5f5
+    style TRANSPORT fill:#e0f2f1
+    style AGENTS fill:#fff8e1

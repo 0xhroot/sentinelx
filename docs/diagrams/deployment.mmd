@@ -1,0 +1,116 @@
+graph TB
+    subgraph SINGLE["Single-Host Deployment"]
+        direction TB
+
+        subgraph SH_HOST["Host Machine"]
+            direction TB
+
+            subgraph SH_SYSTEMD["systemd Service"]
+                SH_BACKEND["sentinelx-backend<br/>Port 8443 (API)<br/>--host 0.0.0.0<br/>--config /etc/sentinelx/sentinelx.toml"]
+            end
+
+            subgraph SH_ENGINES["Engine Stack"]
+                direction LR
+                SH_TELEMETRY["TelemetryEngine<br/>eBPF, fanotify<br/>netlink, audit"]
+                SH_PIPELINE["PipelineCoordinator<br/>7 providers<br/>7 collectors<br/>7 assessors"]
+                SH_DETECTION["DetectionEngine<br/>HookDetector<br/>Legacy detectors"]
+                SH_ANALYSIS["Analysis Engines<br/>Correlation, Incident<br/>Threat, Behavior<br/>Intelligence"]
+                SH_RESPONSE["ResponseEngine<br/>Policy, Workflow<br/>Audit log"]
+            end
+
+            subgraph SH_STORAGE["Storage"]
+                SH_DB["SQLite (WAL mode)<br/>/var/lib/sentinelx/sentinelx.db<br/>23 tables"]
+                SH_EVIDENCE["Evidence Files<br/>/var/lib/sentinelx/evidence/<br/>Forensic snapshots"]
+            end
+
+            subgraph SH_DIRS["Directory Layout"]
+                SH_CONF["/etc/sentinelx/<br/>sentinelx.toml"]
+                SH_DATA["/var/lib/sentinelx/<br/>sentinelx.db, evidence/"]
+                SH_LOG["/var/log/sentinelx/<br/>sentinelx.log"]
+            end
+
+            SH_BACKEND --> SH_ENGINES
+            SH_ENGINES --> SH_STORAGE
+        end
+    end
+
+    subgraph FLEET["Multi-Host Fleet Deployment"]
+        direction TB
+
+        subgraph FC["Fleet Coordinator (Control Plane)"]
+            direction TB
+            FC_BACKEND["sentinelx-backend<br/>Port 8443 (REST API)<br/>Port 8543 (Transport)"]
+            FC_ENGINES["Full Engine Stack<br/>Telemetry + Pipeline<br/>+ Detection + Analysis"]
+            FC_COORD["CoordinatorEngine<br/>Agent registration<br/>Heartbeat tracking<br/>Policy distribution"]
+            FC_FLEET["FleetManager<br/>Remote actions<br/>Event broadcast"]
+            FC_DB["SQLite Database<br/>fleet_agents, fleet_health<br/>fleet_policies, remote_actions<br/>heartbeat_history"]
+
+            FC_BACKEND --> FC_ENGINES
+            FC_BACKEND --> FC_COORD
+            FC_COORD --> FC_FLEET
+            FC_FLEET --> FC_DB
+        end
+
+        subgraph AGENTS["Endpoint Agents"]
+            direction LR
+
+            subgraph AG_A["Agent: web-01"]
+                AG_A_ENG["AgentEngine<br/>Heartbeat: 30s<br/>CPU, memory, disk<br/>Provider status"]
+                AG_A_PIPE["Local Pipeline<br/>7 discovery providers<br/>7 metadata collectors<br/>7 assessors"]
+                AG_A_TEL["TelemetryEngine<br/>eBPF + fallback providers"]
+                AG_A_RESP["Response Execution<br/>Remote action handler"]
+            end
+
+            subgraph AG_B["Agent: db-01"]
+                AG_B_ENG["AgentEngine"]
+                AG_B_PIPE["Local Pipeline"]
+                AG_B_TEL["TelemetryEngine"]
+                AG_B_RESP["Response Execution"]
+            end
+
+            subgraph AG_C["Agent: api-01"]
+                AG_C_ENG["AgentEngine"]
+                AG_C_PIPE["Local Pipeline"]
+                AG_C_TEL["TelemetryEngine"]
+                AG_C_RESP["Response Execution"]
+            end
+        end
+
+        subgraph TRANSPORT_F["Transport Layer"]
+            T_MTLS["mTLS (tokio-rustls)<br/>Optional mutual auth"]
+            T_COMPRESS["Gzip Compression<br/>~60% bandwidth reduction"]
+            T_FRAMING["Length-Prefixed Framing<br/>[4B LE length][JSON payload]"]
+            T_RETRY["Reconnection<br/>Configurable retry<br/>Background task"]
+        end
+
+        FC_COORD <-->|"TCP + optional mTLS"| TRANSPORT_F
+        TRANSPORT_F <--> AGENTS
+
+        subgraph FLEET_DASH["Fleet Dashboard"]
+            FD_OVERVIEW["Fleet Overview<br/>Agent counts, uptime"]
+            FD_AGENTS["Agent Status<br/>Healthy / Degraded / Offline"]
+            FD_POLICIES["Policy Distribution<br/>Create, version, enable"]
+            FD_ACTIONS["Remote Actions<br/>Execute, track, audit"]
+        end
+
+        FLEET_DASH -->|"REST API"| FC_BACKEND
+    end
+
+    subgraph HEALTH["Agent Health Status Logic"]
+        H_HEALTHY["Healthy<br/>Last heartbeat within timeout"]
+        H_DEGRADED["Degraded<br/>Last heartbeat between<br/>1x and 3x timeout"]
+        H_OFFLINE["Offline<br/>Last heartbeat older than<br/>3x timeout"]
+    end
+
+    subgraph PERF["Performance Targets"]
+        P_AGENTS["1000+ agents<br/>Async tokio architecture"]
+        P_CPU["CPU: < 2% idle"]
+        P_MEM["Memory: < 100MB idle"]
+        P_RATE["Telemetry: 50K events/sec"]
+        P_BUFFER["Buffer: 50K events"]
+    end
+
+    style SINGLE fill:#e3f2fd
+    style FLEET fill:#e8eaf6
+    style HEALTH fill:#fff3e0
+    style PERF fill:#e8f5e9

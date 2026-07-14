@@ -1,0 +1,44 @@
+[package]
+name = "sentinelx-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "CLI for SentinelX"
+
+[dependencies]
+sentinelx-common.workspace = true
+sentinelx-config.workspace = true
+sentinelx-core.workspace = true
+sentinelx-assessment.workspace = true
+sentinelx-database.workspace = true
+sentinelx-detector.workspace = true
+sentinelx-telemetry.workspace = true
+sentinelx-forensics.workspace = true
+sentinelx-reporting.workspace = true
+sentinelx-response.workspace = true
+sentinelx-timeline.workspace = true
+sentinelx-kernel.workspace = true
+sentinelx-process.workspace = true
+sentinelx-network.workspace = true
+sentinelx-module.workspace = true
+sentinelx-memory.workspace = true
+sentinelx-integrity.workspace = true
+sentinelx-persistence.workspace = true
+sentinelx-ebpf.workspace = true
+sentinelx-fanotify.workspace = true
+sentinelx-netlink.workspace = true
+sentinelx-audit.workspace = true
+sentinelx-correlation.workspace = true
+sentinelx-incident.workspace = true
+sentinelx-threat.workspace = true
+sentinelx-behavior.workspace = true
+sentinelx-intelligence.workspace = true
+sentinelx-fleet.workspace = true
+clap.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true

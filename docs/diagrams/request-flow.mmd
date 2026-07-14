@@ -1,0 +1,57 @@
+sequenceDiagram
+    actor Client as Client<br/>(CLI / Dashboard / curl)
+    participant Router as Axum Router<br/>(routes.rs)
+    participant Handler as Route Handler
+    participant AppState as AppState<br/>(Arc&lt;AppState&gt;)
+    participant Engine as DetectionEngine
+    participant Pipeline as PipelineCoordinator
+    participant Telemetry as TelemetryEngine
+    participant Threat as ThreatEngine
+    participant Incident as IncidentEngine
+    participant Response as ResponseEngine
+    participant Store as Store<br/>(SQLite WAL)
+
+    Client->>Router: HTTP Request<br/>GET /api/{resource}
+
+    Router->>Router: Route matching<br/>Pattern: /api/health, /api/threats, etc.<br/>Extract: Path, Query, State
+
+    Router->>Handler: Dispatch to handler fn<br/>State(Arc&lt;AppState&gt;) extractor
+
+    alt Health Check
+        Handler-->>Client: 200 {status: "ok", version: "1.0"}
+    else List Threats
+        Handler->>Store: ThreatRepository::find_all()
+        Store-->>Handler: Vec&lt;ThreatEvent&gt;
+        Handler-->>Client: 200 {threats: [...]}
+    else Trigger Scan
+        Handler->>Engine: engine.run_scan()
+        Engine->>Pipeline: pipeline.run()
+        Pipeline->>Pipeline: Discovery → Metadata<br/>→ Assessment → Evidence
+        Pipeline-->>Engine: PipelineResult
+        Engine-->>Handler: Vec&lt;ThreatEvent&gt;
+        Handler->>Store: ThreatRepository::insert()
+        Handler-->>Client: 200 {threats_found, threats}
+    else Telemetry
+        Handler->>Telemetry: telemetry_engine.list_events()
+        Telemetry-->>Handler: Vec&lt;TelemetryEvent&gt;
+        Handler-->>Client: 200 {events: [...]}
+    else Incident
+        Handler->>Incident: incident_engine.list_incidents()
+        Incident-->>Handler: Vec&lt;Incident&gt;
+        Handler-->>Client: 200 {incidents: [...]}
+    else Response
+        Handler->>Response: response_engine.respond(threat)
+        Response->>Response: PolicyEngine::find_matching()
+        Response->>Response: WorkflowEngine::execute()
+        Response->>Response: Safety check (dry_run)
+        Response->>Store: ResponseAuditRepository::insert()
+        Response-->>Handler: ResponseRecord
+        Handler-->>Client: 200 {response: {...}}
+    else Fleet
+        Handler->>AppState: fleet_manager.list_agents()
+        AppState-->>Handler: Vec&lt;FleetAgentInfo&gt;
+        Handler-->>Client: 200 {agents: [...]}
+    end
+
+    Note over Router,Store: All handlers use async/await<br/>tokio runtime, non-blocking I/O
+    Note over AppState: Shared state via Arc&lt;AppState&gt;<br/>engines, store, telemetry all accessible

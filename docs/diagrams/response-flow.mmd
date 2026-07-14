@@ -1,0 +1,85 @@
+graph TB
+    subgraph INPUT["Threat Input"]
+        TD["ThreatDecision<br/>severity, confidence, priority<br/>risk_score_final (0-100)"]
+        THREAT["ThreatEvent<br/>category, source_detector<br/>evidence, mitre_attack"]
+    end
+
+    subgraph SAFETY_CHECK["Safety Controls"]
+        SC_DRY{"dry_run enabled?"}
+        SC_RATE{"Rate limited?<br/>cooldown: 10s<br/>max: 60/min"}
+        SC_PROTECT{"Protected target?<br/>PID 1 (init)<br/>Core modules:<br/>vmlinux, core, nvidia,<br/>drm, kvm"}
+        SC_SEV{"Severity threshold<br/>max_severity: High"}
+    end
+
+    subgraph POLICY["Policy Engine (PolicyEngine)"]
+        PE_MATCH["find_matching_policies()<br/>Filter by: severity_threshold<br/>confidence_threshold<br/>threat_types"]
+        PE_BEST["best_matching_policy()<br/>Sort by severity rank<br/>Return highest match"]
+        PE_ACTIONS["actions_for_policy()<br/>Map allowed_actions<br/>to ResponseAction enum"]
+    end
+
+    subgraph WORKFLOW["Workflow Engine (WorkflowEngine)"]
+        WE_SELECT["Workflow Selection<br/>Match trigger_severity<br/>critical_isolation<br/>standard_containment<br/>low_priority_alert"]
+        WE_STEPS["Workflow Steps<br/>Sequential execution<br/>Per-step timeout"]
+        WE_ROLLBACK["Rollback Check<br/>per-step rollback_action<br/>if defined"]
+    end
+
+    subgraph ACTIONS["Response Actions"]
+        direction LR
+        A_SAFE["Safe Actions<br/>Alert<br/>LogEvent<br/>CollectForensics<br/>GenerateIncidentReport<br/>NotifyDashboard"]
+        A_DANGEROUS["Dangerous Actions<br/>KillProcess<br/>SuspendProcess<br/>FreezeProcess<br/>UnloadModule<br/>DisableService<br/>BlockPID<br/>RunCustomScript<br/>QuarantineFile<br/>IsolateHost"]
+        A_FORENSICS["Forensic Collection<br/>CollectBinary<br/>CollectMemoryDump<br/>CollectOpenFiles<br/>CaptureNetworkConnections<br/>CaptureProcessTree<br/>SnapshotMemory<br/>DumpProcess"]
+    end
+
+    subgraph EXECUTION["Action Execution"]
+        EX_DRY{"dry_run?"}
+        EX_SIMULATE["Simulate Action<br/>Log what would happen<br/>Record in audit trail"]
+        EX_EXECUTE["Execute Action<br/>System call / signal<br/>Timeout enforcement"]
+    end
+
+    subgraph AUDIT["Audit Trail (response_audit)"]
+        AR_LOG["AuditRecord<br/>action_type, action_params<br/>result, duration_ms<br/>errors, rollback_status"]
+        AR_STORE["Store to response_audit table<br/>Indexed by timestamp<br/>threat_id, workflow_name"]
+    end
+
+    subgraph DEFAULT_WORKFLOWS["Default Workflows"]
+        WF_CRIT["critical_isolation<br/>Alert → Log → CaptureTree<br/>→ MemoryDump → CaptureNet<br/>→ KillProcess → Report<br/>→ NotifyDashboard"]
+        WF_STD["standard_containment<br/>Alert → Log → Forensics<br/>→ BlockIP → Quarantine"]
+        WF_LOW["low_priority_alert<br/>Alert → Log only"]
+    end
+
+    TD --> SC_DRY
+    THREAT --> SC_DRY
+
+    SC_DRY -->|No| SC_RATE
+    SC_DRY -->|Yes| POLICY
+    SC_RATE -->|Limited| AR_LOG
+    SC_RATE -->|OK| SC_PROTECT
+    SC_PROTECT -->|Protected| AR_LOG
+    SC_PROTECT -->|OK| SC_SEV
+    SC_SEV -->|Below threshold| AR_LOG
+    SC_SEV -->|OK| POLICY
+
+    SC_DRY -->|Yes| SC_RATE_CHECK["Rate check skipped<br/>(dry run always proceeds)"]
+    SC_RATE_CHECK --> PE_MATCH
+
+    PE_MATCH --> PE_BEST
+    PE_BEST --> PE_ACTIONS
+    PE_ACTIONS --> WE_SELECT
+
+    WE_SELECT --> WE_STEPS
+    WE_STEPS --> WE_ROLLBACK
+
+    WE_STEPS --> EX_DRY
+    EX_DRY -->|Yes| EX_SIMULATE
+    EX_DRY -->|No| EX_EXECUTE
+
+    EX_SIMULATE --> AR_LOG
+    EX_EXECUTE --> AR_LOG
+    WE_ROLLBACK -->|On failure| AR_LOG
+    AR_LOG --> AR_STORE
+
+    style SAFETY_CHECK fill:#ffebee
+    style POLICY fill:#e3f2fd
+    style WORKFLOW fill:#f3e5f5
+    style ACTIONS fill:#fff8e1
+    style AUDIT fill:#e8f5e9

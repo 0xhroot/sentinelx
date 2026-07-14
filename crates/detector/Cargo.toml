@@ -1,0 +1,28 @@
+[package]
+name = "sentinelx-detector"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Core detection engine and event bus for SentinelX"
+
+[dependencies]
+sentinelx-common.workspace = true
+sentinelx-config.workspace = true
+sentinelx-database.workspace = true
+sentinelx-telemetry.workspace = true
+sentinelx-evidence.workspace = true
+sentinelx-rule-engine.workspace = true
+sentinelx-correlation.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+async-trait.workspace = true
+futures.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }

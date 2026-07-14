@@ -1,0 +1,58 @@
+# SentinelX Configuration
+# Enterprise Linux Runtime Integrity & Rootkit Detection Platform
+
+[general]
+hostname = ""  # Auto-detected if empty
+scan_interval_seconds = 60
+baseline_on_start = true
+max_memory_mb = 150
+max_cpu_percent = 3.0
+
+[detection]
+enabled_detectors = [
+    "kernel_integrity",
+    "hidden_process",
+    "hidden_module",
+    "hidden_connection",
+    "hook_detection",
+    "memory_integrity",
+    "persistence",
+    "privilege_escalation",
+]
+severity_threshold = "low"
+mitre_attack_mapping = true
+evidence_collection = true
+
+[monitoring]
+process_monitoring = true
+network_monitoring = true
+module_monitoring = true
+memory_monitoring = true
+syscall_monitoring = true
+file_integrity_monitoring = true
+
+[storage]
+database_path = "/var/lib/sentinelx/sentinelx.db"
+evidence_path = "/var/lib/sentinelx/evidence"
+log_path = "/var/log/sentinelx"
+retention_days = 90
+max_events = 1000000
+
+[api]
+enabled = true
+host = "127.0.0.1"
+port = 8443
+tls_enabled = false
+cors_origins = ["http://localhost:3000"]
+
+[logging]
+level = "info"
+format = "pretty"
+file_output = true
+json_format = false
+
+[ebpf]
+enabled = true
+map_size = 10240
+perf_buffer_pages = 64
+max_events_per_second = 10000

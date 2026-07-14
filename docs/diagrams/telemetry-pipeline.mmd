@@ -1,0 +1,89 @@
+graph TB
+    subgraph KERNEL["Linux Kernel"]
+        direction LR
+        K_EBPF["eBPF<br/>Aya 0.14<br/>Tracepoints<br/>Kprobes, XDP"]
+        K_FAN["fanotify<br/>FAN_ACCESS<br/>FAN_OPEN<br/>FAN_MODIFY"]
+        K_NL["Netlink<br/>NETLINK_ROUTE<br/>RTMGRP_LINK<br/>RTMGRP_IPV4_IFADDR"]
+        K_AUD["Audit<br/>NETLINK_AUDIT<br/>SYSCALL, EXECVE<br/>CRED, PATH"]
+        K_PROC["/proc<br/>Process scanning<br/>Module lists<br/>Network connections"]
+    end
+
+    subgraph MANAGER["ProviderManager"]
+        PM_DETECT["Capability Detection<br/>eBPF: /sys/kernel/btf/vmlinux<br/>fanotify: CAP_SYS_ADMIN<br/>netlink: Always available<br/>audit: CAP_AUDIT_*"]
+        PM_SELECT["Provider Selection<br/>Priority fallback:<br/>1. eBPF → 2. Tracepoints<br/>3. fanotify → 4. auditd<br/>5. proc scanning"]
+    end
+
+    subgraph PROVIDERS["TelemetryProvider Implementations"]
+        direction LR
+        TP_EBPF["EbpfTelemetryProvider<br/>EbpfEngine → BpfRawEvent<br/>→ TelemetryEvent"]
+        TP_FAN["FanotifyProvider<br/>Blocking read loop<br/>spawn_blocking"]
+        TP_NL["NetlinkProvider<br/>NlMsgHdr → Ifinfomsg<br/>→ NlAttr TLV parse"]
+        TP_AUD["AuditdProvider<br/>Syscall number mapping<br/>→ TelemetryEventType"]
+        TP_PROC["ProcConnector<br/>Fallback provider<br/>Always available"]
+    end
+
+    subgraph ENGINE["TelemetryEngine"]
+        NORM["EventNormalizer<br/>Raw events → TelemetryEvent<br/>Unified internal format"]
+        REG["Provider Registry<br/>register_provider()<br/>initialize_default_providers()"]
+    end
+
+    subgraph BUS["TelemetryBus"]
+        INGEST["mpsc::channel<br/>Provider → Bus ingestion"]
+        BUF["VecDeque Buffer<br/>Capacity: 50K events<br/>Eviction: oldest dropped"]
+        RATE["Rate Limiter<br/>Max: 50K events/second<br/>Backpressure via mpsc"]
+        FANOUT["tokio::sync::broadcast<br/>Fan-out to subscribers"]
+    end
+
+    subgraph CATEGORIES["34 Event Types (5 Categories)"]
+        direction LR
+        CAT_PROC["Process (9)<br/>Create, Fork, Clone<br/>Exec, Exit, Setuid<br/>Setgid, Ptrace, CapChange"]
+        CAT_FS["Filesystem (11)<br/>Open, Close, Read, Write<br/>Rename, Delete, Execute<br/>PermChange, OwnChange<br/>Mount, Unmount"]
+        CAT_NET["Network (6)<br/>Connect, Accept, Bind<br/>Listen, Close, DnsLookup"]
+        CAT_KERN["Kernel (4)<br/>ModuleLoad, ModuleUnload<br/>BpfLoad, ParamChange"]
+        CAT_PERS["Persistence (4)<br/>ServiceCreate, CronModify<br/>RcLocalModify<br/>LdPreloadModify"]
+    end
+
+    subgraph SUBSCRIBERS["Bus Subscribers"]
+        direction LR
+        SUB_PIPE["Pipeline Coordinator<br/>Discovery → Evidence"]
+        SUB_CORR["CorrelationEngine<br/>Relationship graph"]
+        SUB_BEHV["BehaviorEngine<br/>Per-object profiling"]
+        SUB_RESP["ResponseEngine<br/>Threat response"]
+        SUB_DB["Database Writer<br/>telemetry_events table"]
+    end
+
+    K_EBPF --> TP_EBPF
+    K_FAN --> TP_FAN
+    K_NL --> TP_NL
+    K_AUD --> TP_AUD
+    K_PROC --> TP_PROC
+
+    PM_DETECT --> PM_SELECT
+    PM_SELECT --> TP_EBPF
+    PM_SELECT --> TP_FAN
+    PM_SELECT --> TP_NL
+    PM_SELECT --> TP_AUD
+    PM_SELECT --> TP_PROC
+
+    TP_EBPF --> NORM
+    TP_FAN --> NORM
+    TP_NL --> NORM
+    TP_AUD --> NORM
+    TP_PROC --> NORM
+
+    NORM --> REG
+    REG --> INGEST
+    INGEST --> BUF
+    BUF --> RATE
+    RATE --> FANOUT
+
+    FANOUT --> SUB_PIPE
+    FANOUT --> SUB_CORR
+    FANOUT --> SUB_BEHV
+    FANOUT --> SUB_RESP
+    FANOUT --> SUB_DB
+
+    style KERNEL fill:#ffebee
+    style PROVIDERS fill:#e8eaf6
+    style BUS fill:#e0f2f1
+    style CATEGORIES fill:#fff8e1

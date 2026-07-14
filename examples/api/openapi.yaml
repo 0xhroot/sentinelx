@@ -1,0 +1,2802 @@
+openapi: 3.0.3
+info:
+  title: SentinelX REST API
+  version: "1.0.0"
+  description: |
+    Enterprise Linux Runtime Integrity & Rootkit Detection Platform.
+
+    SentinelX performs deep system inspection to detect kernel rootkits, hidden processes,
+    tampered modules, suspicious hooks, and other advanced threats. This API provides
+    access to all detection, forensics, intelligence, response, and fleet management
+    capabilities.
+  license:
+    name: GPL-3.0-or-later
+    url: https://github.com/sentinelx/sentinelx
+
+servers:
+  - url: http://127.0.0.1:8443
+    description: Default local development server
+  - url: https://sentinelx.example.com:8443
+    description: Production server (TLS)
+
+tags:
+  - name: System
+    description: Health, status, and integrity endpoints
+  - name: Detection
+    description: Scan operations and detector management
+  - name: Threats
+    description: Threat event lifecycle management
+  - name: Forensics
+    description: Process, module, network, and forensic data collection
+  - name: Evidence
+    description: Evidence collection and management
+  - name: Rules
+    description: Custom detection rule engine
+  - name: Correlation
+    description: Threat correlation and scoring
+  - name: Trust
+    description: Detector trust source management
+  - name: Incidents
+    description: Correlated security incidents
+  - name: ThreatDecisions
+    description: Risk-scored threat decisions
+  - name: Graph
+    description: Incident and threat relationship graph
+  - name: Response
+    description: Automated response actions and audit
+  - name: Telemetry
+    description: Real-time telemetry events and provider management
+  - name: Events
+    description: Stored and live event streams
+  - name: Behavior
+    description: Behavioral profiling and analysis
+  - name: Intelligence
+    description: Threat intelligence (IoCs, MITRE, YARA, Sigma, CVEs)
+  - name: Fleet
+    description: Multi-host fleet management
+
+paths:
+  # ── System ────────────────────────────────────────────────────────────────
+  /api/health:
+    get:
+      tags: [System]
+      operationId: healthCheck
+      summary: Health check
+      description: Returns the service health status and version.
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /api/status:
+    get:
+      tags: [System]
+      operationId: getStatus
+      summary: System status
+      description: Returns current metrics snapshot and the number of loaded detectors.
+      responses:
+        "200":
+          description: Status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+
+  /api/kernel/integrity:
+    get:
+      tags: [System]
+      operationId: kernelIntegrity
+      summary: Kernel integrity status
+      description: |
+        Checks kernel security posture: secure boot, kptr_restrict,
+        dmesg_restrict, and kernel lockdown mode.
+      responses:
+        "200":
+          description: Kernel integrity status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KernelIntegrityResponse"
+
+  /api/memory/integrity:
+    get:
+      tags: [System]
+      operationId: memoryIntegrity
+      summary: Memory integrity status
+      description: Returns memory usage statistics and memory-related integrity checks.
+      responses:
+        "200":
+          description: Memory integrity status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemoryIntegrityResponse"
+
+  # ── Detection ─────────────────────────────────────────────────────────────
+  /api/scan:
+    post:
+      tags: [Detection]
+      operationId: scanAll
+      summary: Run full scan
+      description: Executes all enabled detectors and returns any threats found.
+      responses:
+        "200":
+          description: Scan completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanResponse"
+
+  /api/scan/{detector}:
+    post:
+      tags: [Detection]
+      operationId: scanDetector
+      summary: Run specific detector
+      description: Executes a single named detector and returns any threats found.
+      parameters:
+        - name: detector
+          in: path
+          required: true
+          description: Detector name (e.g. hook_detection, hidden_process)
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Detector scan completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanResponse"
+        "404":
+          description: Detector not found
+
+  /api/detectors:
+    get:
+      tags: [Detection]
+      operationId: listDetectors
+      summary: List loaded detectors
+      description: Returns all registered detection modules.
+      responses:
+        "200":
+          description: Detector list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DetectorsResponse"
+
+  # ── Threats ───────────────────────────────────────────────────────────────
+  /api/threats:
+    get:
+      tags: [Threats]
+      operationId: listThreats
+      summary: List threats
+      description: Returns up to 100 unacknowledged threat events.
+      responses:
+        "200":
+          description: Threat list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ThreatRow"
+
+  /api/threats/stats:
+    get:
+      tags: [Threats]
+      operationId: threatStats
+      summary: Threat statistics
+      description: Returns total, unacknowledged, critical, and high threat counts.
+      responses:
+        "200":
+          description: Threat statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ThreatStatsResponse"
+
+  /api/threats/{id}:
+    get:
+      tags: [Threats]
+      operationId: getThreat
+      summary: Get threat by ID
+      description: Returns a single threat event by its UUID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Threat details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ThreatRow"
+        "404":
+          description: Threat not found
+
+  /api/threats/{id}/acknowledge:
+    post:
+      tags: [Threats]
+      operationId: acknowledgeThreat
+      summary: Acknowledge threat
+      description: Marks a threat as acknowledged.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Threat acknowledged
+        "404":
+          description: Threat not found
+
+  /api/threats/{id}/resolve:
+    post:
+      tags: [Threats]
+      operationId: resolveThreat
+      summary: Resolve threat
+      description: Marks a threat as resolved.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Threat resolved
+        "404":
+          description: Threat not found
+
+  # ── Forensics ─────────────────────────────────────────────────────────────
+  /api/processes:
+    get:
+      tags: [Forensics]
+      operationId: listProcesses
+      summary: List processes
+      description: Returns the full process tree with suspicious indicators.
+      responses:
+        "200":
+          description: Process list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /api/modules:
+    get:
+      tags: [Forensics]
+      operationId: listModules
+      summary: List kernel modules
+      description: Returns loaded kernel modules with trust assessment.
+      responses:
+        "200":
+          description: Module list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /api/network:
+    get:
+      tags: [Forensics]
+      operationId: listNetwork
+      summary: List network connections
+      description: Returns active network connections.
+      responses:
+        "200":
+          description: Network connection list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /api/forensics:
+    get:
+      tags: [Forensics]
+      operationId: collectForensics
+      summary: Collect forensic snapshot
+      description: Collects a comprehensive forensic snapshot of the system state.
+      responses:
+        "200":
+          description: Forensic snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForensicSnapshot"
+
+  /api/report:
+    get:
+      tags: [Forensics]
+      operationId: generateReport
+      summary: Generate report
+      description: Runs a scan and generates a JSON report summarizing all threats.
+      responses:
+        "200":
+          description: Generated report
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ── Timeline ──────────────────────────────────────────────────────────────
+  /api/timeline:
+    get:
+      tags: [System]
+      operationId: getTimeline
+      summary: Get threat timeline
+      description: Returns the threat event timeline entries.
+      responses:
+        "200":
+          description: Timeline entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  # ── Evidence ──────────────────────────────────────────────────────────────
+  /api/evidence:
+    get:
+      tags: [Evidence]
+      operationId: listEvidence
+      summary: List evidence
+      description: Returns up to 500 collected evidence items.
+      responses:
+        "200":
+          description: Evidence list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvidenceListResponse"
+
+  /api/evidence/collect:
+    post:
+      tags: [Evidence]
+      operationId: collectEvidence
+      summary: Trigger evidence collection
+      description: Runs evidence collection and persists results.
+      responses:
+        "200":
+          description: Collection completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  evidence_count:
+                    type: integer
+
+  /api/evidence/stats:
+    get:
+      tags: [Evidence]
+      operationId: evidenceStats
+      summary: Evidence statistics
+      description: Returns evidence counts by type, severity, and source.
+      responses:
+        "200":
+          description: Evidence statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvidenceStatsResponse"
+
+  # ── Rules ─────────────────────────────────────────────────────────────────
+  /api/rules:
+    get:
+      tags: [Rules]
+      operationId: listRules
+      summary: List detection rules
+      description: Returns all custom detection rules.
+      responses:
+        "200":
+          description: Rule list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RulesResponse"
+    post:
+      tags: [Rules]
+      operationId: addRule
+      summary: Add a detection rule
+      description: Creates a new custom detection rule.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddRuleRequest"
+      responses:
+        "200":
+          description: Rule created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  rule_id:
+                    type: string
+                    format: uuid
+        "400":
+          description: Validation error
+
+  /api/rules/{id}:
+    get:
+      tags: [Rules]
+      operationId: getRule
+      summary: Get rule by ID
+      description: Returns a single detection rule by UUID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Rule details
+          content:
+            application/json:
+              schema:
+                type: object
+        "404":
+          description: Rule not found
+    delete:
+      tags: [Rules]
+      operationId: deleteRule
+      summary: Delete a rule
+      description: Removes a detection rule by UUID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Rule deleted
+        "404":
+          description: Rule not found
+
+  # ── Correlation ───────────────────────────────────────────────────────────
+  /api/correlations:
+    get:
+      tags: [Correlation]
+      operationId: listCorrelations
+      summary: List correlations
+      description: Returns all stored correlation results.
+      responses:
+        "200":
+          description: Correlation list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CorrelationListResponse"
+
+  /api/correlations/run:
+    post:
+      tags: [Correlation]
+      operationId: runCorrelations
+      summary: Run correlation scan
+      description: Runs detection, evidence collection, and correlation analysis.
+      responses:
+        "200":
+          description: Correlation completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  threats_found:
+                    type: integer
+                  correlations_found:
+                    type: integer
+                  correlations:
+                    type: array
+
+  /api/correlations/stats:
+    get:
+      tags: [Correlation]
+      operationId: correlationStats
+      summary: Correlation statistics
+      description: Returns correlation counts by rule and kind.
+      responses:
+        "200":
+          description: Correlation statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_correlations:
+                    type: integer
+                  by_rule:
+                    type: object
+                  by_kind:
+                    type: object
+
+  /api/scoring/run:
+    post:
+      tags: [Correlation]
+      operationId: runScoring
+      summary: Run threat scoring
+      description: Runs full scan, correlation, and risk scoring pipeline.
+      responses:
+        "200":
+          description: Scoring completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  threats_scored:
+                    type: integer
+                  scores:
+                    type: array
+
+  # ── Trust ─────────────────────────────────────────────────────────────────
+  /api/trust:
+    get:
+      tags: [Trust]
+      operationId: listTrustSources
+      summary: List trust sources
+      description: Returns all detector trust sources and their scores.
+      responses:
+        "200":
+          description: Trust source list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sources:
+                    type: array
+                  total:
+                    type: integer
+
+  /api/trust/{source}:
+    get:
+      tags: [Trust]
+      operationId: getTrustSource
+      summary: Get trust source
+      description: Returns detailed trust information for a specific source.
+      parameters:
+        - name: source
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Trust source details
+          content:
+            application/json:
+              schema:
+                type: object
+        "404":
+          description: Source not found
+
+  /api/trust/{source}/positive:
+    post:
+      tags: [Trust]
+      operationId: recordPositive
+      summary: Record confirmed positive
+      description: Records a confirmed true positive for a detector source.
+      parameters:
+        - name: source
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Positive recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  trust_score:
+                    type: number
+
+  /api/trust/{source}/false-positive:
+    post:
+      tags: [Trust]
+      operationId: recordFalsePositive
+      summary: Record false positive
+      description: Records a false positive for a detector source.
+      parameters:
+        - name: source
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: False positive recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  trust_score:
+                    type: number
+
+  # ── Incidents ─────────────────────────────────────────────────────────────
+  /api/incidents:
+    get:
+      tags: [Incidents]
+      operationId: listIncidents
+      summary: List incidents
+      description: Returns up to 500 correlated security incidents.
+      responses:
+        "200":
+          description: Incident list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IncidentListResponse"
+
+  /api/incidents/{id}:
+    get:
+      tags: [Incidents]
+      operationId: getIncident
+      summary: Get incident
+      description: Returns a single incident by UUID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Incident details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IncidentResponse"
+        "404":
+          description: Incident not found
+
+  /api/incidents/{id}/status:
+    post:
+      tags: [Incidents]
+      operationId: updateIncidentStatus
+      summary: Update incident status
+      description: Updates the status of an incident.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  description: New status (e.g. open, investigating, resolved)
+                  example: investigating
+      responses:
+        "200":
+          description: Status updated
+        "400":
+          description: Missing status field
+        "404":
+          description: Incident not found
+
+  # ── Threat Decisions ──────────────────────────────────────────────────────
+  /api/threat-decisions:
+    get:
+      tags: [ThreatDecisions]
+      operationId: listThreatDecisions
+      summary: List threat decisions
+      description: Returns up to 500 risk-scored threat decisions.
+      responses:
+        "200":
+          description: Threat decision list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ThreatDecisionListResponse"
+
+  /api/threat-decisions/{id}:
+    get:
+      tags: [ThreatDecisions]
+      operationId: getThreatDecision
+      summary: Get threat decision
+      description: Returns a single threat decision by UUID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Threat decision details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ThreatDecisionResponse"
+        "404":
+          description: Threat decision not found
+
+  # ── Graph ─────────────────────────────────────────────────────────────────
+  /api/graph:
+    get:
+      tags: [Graph]
+      operationId: getGraph
+      summary: Get graph overview
+      description: Returns the incident/threat relationship graph summary.
+      responses:
+        "200":
+          description: Graph data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  incidents:
+                    type: integer
+                  threats:
+                    type: integer
+                  message:
+                    type: string
+
+  /api/graph/{node_id}:
+    get:
+      tags: [Graph]
+      operationId: getGraphNode
+      summary: Get graph node
+      description: Returns details for a specific graph node (incident or threat).
+      parameters:
+        - name: node_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Node details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  severity:
+                    type: string
+                  error:
+                    type: string
+
+  # ── Response & Audit ──────────────────────────────────────────────────────
+  /api/responses:
+    get:
+      tags: [Response]
+      operationId: listResponses
+      summary: List response actions
+      description: Returns the history of automated response actions taken.
+      responses:
+        "200":
+          description: Response list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseListResponse"
+
+  /api/responses/audit:
+    get:
+      tags: [Response]
+      operationId: listAudit
+      summary: Audit log
+      description: Returns the full response audit log with result summary.
+      responses:
+        "200":
+          description: Audit log
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditListResponse"
+
+  /api/responses/audit/{threat_id}:
+    get:
+      tags: [Response]
+      operationId: getAuditForThreat
+      summary: Audit log for a threat
+      description: Returns all response audit records for a specific threat.
+      parameters:
+        - name: threat_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Audit records for the threat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  threat_id:
+                    type: string
+                  records:
+                    type: array
+                  total:
+                    type: integer
+
+  /api/workflows:
+    get:
+      tags: [Response]
+      operationId: listWorkflows
+      summary: List workflows and policies
+      description: Returns available response workflows, policies, and safety configuration.
+      responses:
+        "200":
+          description: Workflows, policies, and safety config
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  workflows:
+                    type: array
+                  policies:
+                    type: array
+                  safety:
+                    type: object
+
+  # ── Telemetry ─────────────────────────────────────────────────────────────
+  /api/telemetry:
+    get:
+      tags: [Telemetry]
+      operationId: listTelemetryEvents
+      summary: List telemetry events
+      description: Returns up to 100 stored telemetry events with total count.
+      responses:
+        "200":
+          description: Telemetry event list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TelemetryEventListResponse"
+
+  /api/telemetry/live:
+    get:
+      tags: [Telemetry]
+      operationId: liveTelemetryEvents
+      summary: Live telemetry events
+      description: Returns the 50 most recent events from the in-memory telemetry buffer.
+      responses:
+        "200":
+          description: Live events
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TelemetryEventListResponse"
+
+  /api/telemetry/providers:
+    get:
+      tags: [Telemetry]
+      operationId: listTelemetryProviders
+      summary: List telemetry providers
+      description: Returns all registered telemetry providers and their status.
+      responses:
+        "200":
+          description: Provider list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  providers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        status:
+                          type: string
+                          enum: [running, degraded, stopped]
+                        events_received:
+                          type: integer
+                        events_dropped:
+                          type: integer
+                  total:
+                    type: integer
+
+  /api/telemetry/providers/health:
+    get:
+      tags: [Telemetry]
+      operationId: providerHealth
+      summary: Provider health diagnostics
+      description: Returns detailed health information for each telemetry provider.
+      responses:
+        "200":
+          description: Provider health details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  providers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        status:
+                          type: string
+                        events_received:
+                          type: integer
+                        events_dropped:
+                          type: integer
+                        started_at:
+                          type: string
+                          format: date-time
+                        uptime_seconds:
+                          type: integer
+                        drop_rate_percent:
+                          type: number
+                  summary:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      running:
+                        type: integer
+                      degraded:
+                        type: integer
+                      stopped:
+                        type: integer
+
+  /api/telemetry/providers/latency:
+    get:
+      tags: [Telemetry]
+      operationId: kernelLatency
+      summary: Kernel telemetry latency
+      description: Returns kernel-to-user event delivery latency per provider.
+      responses:
+        "200":
+          description: Latency report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  latency:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        provider:
+                          type: string
+                        avg_latency_us:
+                          type: number
+                        max_latency_us:
+                          type: number
+                        samples:
+                          type: integer
+                  total_providers:
+                    type: integer
+
+  /api/telemetry/providers/rate:
+    get:
+      tags: [Telemetry]
+      operationId: telemetryRate
+      summary: Telemetry event rate
+      description: Returns event throughput and drop rates per provider.
+      responses:
+        "200":
+          description: Rate statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        provider:
+                          type: string
+                        events_received:
+                          type: integer
+                        events_dropped:
+                          type: integer
+                        drop_rate_percent:
+                          type: number
+                  total_events:
+                    type: integer
+                  dropped_events:
+                    type: integer
+                  current_rate_per_second:
+                    type: number
+
+  /api/telemetry/providers/capabilities:
+    get:
+      tags: [Telemetry]
+      operationId: providerCapabilities
+      summary: Provider capabilities
+      description: Returns available telemetry capabilities and preferred provider order.
+      responses:
+        "200":
+          description: Capability list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capabilities:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        capability:
+                          type: string
+                        available:
+                          type: boolean
+                        reason:
+                          type: string
+                  preferred_order:
+                    type: array
+                    items:
+                      type: string
+                  active_providers:
+                    type: integer
+
+  /api/telemetry/stats:
+    get:
+      tags: [Telemetry]
+      operationId: telemetryStats
+      summary: Telemetry bus statistics
+      description: Returns global telemetry bus metrics.
+      responses:
+        "200":
+          description: Telemetry statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TelemetryStatsResponse"
+
+  # ── Events ────────────────────────────────────────────────────────────────
+  /api/events:
+    get:
+      tags: [Events]
+      operationId: listEvents
+      summary: List stored events
+      description: Returns up to 200 stored events from the database.
+      responses:
+        "200":
+          description: Event list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /api/events/live:
+    get:
+      tags: [Events]
+      operationId: liveEventsStream
+      summary: Live events stream
+      description: Returns the 100 most recent events from the in-memory buffer.
+      responses:
+        "200":
+          description: Live event list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                  total:
+                    type: integer
+
+  # ── Behavior ──────────────────────────────────────────────────────────────
+  /api/behavior/profiles:
+    get:
+      tags: [Behavior]
+      operationId: listBehaviorProfiles
+      summary: List behavior profiles
+      description: Returns all tracked behavioral profiles.
+      responses:
+        "200":
+          description: Profile list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profiles:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        object_id:
+                          type: string
+                        first_seen:
+                          type: string
+                          format: date-time
+                        last_seen:
+                          type: string
+                          format: date-time
+                        execution_count:
+                          type: integer
+                        connection_count:
+                          type: integer
+                        privilege_changes:
+                          type: integer
+                        persistence_events:
+                          type: integer
+                        integrity_violations:
+                          type: integer
+                        historical_score:
+                          type: number
+                        categories:
+                          type: object
+                  total:
+                    type: integer
+
+  /api/behavior/profiles/{object_id}:
+    get:
+      tags: [Behavior]
+      operationId: getBehaviorProfile
+      summary: Get behavior profile
+      description: Returns the behavioral profile for a specific tracked object.
+      parameters:
+        - name: object_id
+          in: path
+          required: true
+          description: Object identifier (e.g. process/1234)
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Profile details
+          content:
+            application/json:
+              schema:
+                type: object
+        "404":
+          description: Profile not found
+
+  /api/behavior/record:
+    post:
+      tags: [Behavior]
+      operationId: recordBehaviorEvent
+      summary: Record a behavior event
+      description: Records a behavioral observation for an object and updates its profile.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordBehaviorEventRequest"
+      responses:
+        "200":
+          description: Event recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  object_id:
+                    type: string
+                  severity:
+                    type: string
+                  risk_score:
+                    type: number
+                  confidence:
+                    type: number
+                  execution_count:
+                    type: integer
+                  connection_count:
+                    type: integer
+        "400":
+          description: Invalid category
+
+  /api/behavior/stats:
+    get:
+      tags: [Behavior]
+      operationId: behaviorStats
+      summary: Behavior statistics
+      description: Returns behavioral analysis statistics and severity breakdown.
+      responses:
+        "200":
+          description: Behavior statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_profiles:
+                    type: integer
+                  by_severity:
+                    type: object
+
+  # ── Intelligence ──────────────────────────────────────────────────────────
+  /api/intelligence/stats:
+    get:
+      tags: [Intelligence]
+      operationId: intelligenceStats
+      summary: Intelligence statistics
+      description: Returns counts of IoCs, MITRE techniques, YARA/Sigma rules, and CVEs.
+      responses:
+        "200":
+          description: Intelligence statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_iocs:
+                    type: integer
+                  iocs_by_type:
+                    type: object
+                  mitre_techniques:
+                    type: integer
+                  yara_rules:
+                    type: integer
+                  sigma_rules:
+                    type: integer
+                  cves:
+                    type: integer
+
+  /api/intelligence/iocs:
+    get:
+      tags: [Intelligence]
+      operationId: listIoCs
+      summary: List IoCs
+      description: Returns up to 200 loaded Indicators of Compromise.
+      responses:
+        "200":
+          description: IoC list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  iocs:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/IoCResponse"
+                  total:
+                    type: integer
+    post:
+      tags: [Intelligence]
+      operationId: addIoC
+      summary: Add an IoC
+      description: Adds a new Indicator of Compromise to the intelligence engine.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddIoCRequest"
+      responses:
+        "200":
+          description: IoC added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  value:
+                    type: string
+        "400":
+          description: Invalid IoC type
+
+  /api/intelligence/iocs/{type}/{value}:
+    get:
+      tags: [Intelligence]
+      operationId: checkIoC
+      summary: Check an IoC
+      description: Checks if a specific IoC value is known malicious.
+      parameters:
+        - name: type
+          in: path
+          required: true
+          description: IoC type (hash, ip_address, domain, filename, url, email)
+          schema:
+            type: string
+        - name: value
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: IoC check result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  found:
+                    type: boolean
+                  ioc:
+                    $ref: "#/components/schemas/IoCResponse"
+                  message:
+                    type: string
+    delete:
+      tags: [Intelligence]
+      operationId: deleteIoC
+      summary: Delete an IoC
+      description: Removes a specific IoC from the intelligence engine.
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: value
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: IoC deleted
+        "404":
+          description: IoC not found
+
+  /api/intelligence/mitre:
+    get:
+      tags: [Intelligence]
+      operationId: listMitreTechniques
+      summary: List MITRE ATT&CK techniques
+      description: Returns all loaded MITRE ATT&CK technique mappings.
+      responses:
+        "200":
+          description: MITRE technique list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  techniques:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/MitreTechnique"
+                  total:
+                    type: integer
+
+  /api/intelligence/mitre/{id}:
+    get:
+      tags: [Intelligence]
+      operationId: getMitreTechnique
+      summary: Get MITRE technique
+      description: Returns a single MITRE ATT&CK technique by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: MITRE technique ID (e.g. T1059)
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Technique details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MitreTechnique"
+        "404":
+          description: Technique not found
+
+  /api/intelligence/yara:
+    get:
+      tags: [Intelligence]
+      operationId: listYaraRules
+      summary: List YARA rules
+      description: Returns all loaded YARA detection rules.
+      responses:
+        "200":
+          description: YARA rule list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rules:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/YaraRuleResponse"
+                  total:
+                    type: integer
+    post:
+      tags: [Intelligence]
+      operationId: addYaraRule
+      summary: Add a YARA rule
+      description: Adds a new YARA detection rule.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddYaraRuleRequest"
+      responses:
+        "200":
+          description: YARA rule added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  name:
+                    type: string
+
+  /api/intelligence/yara/{name}:
+    get:
+      tags: [Intelligence]
+      operationId: getYaraRule
+      summary: Get YARA rule
+      description: Returns a single YARA rule by name.
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: YARA rule details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/YaraRuleResponse"
+        "404":
+          description: YARA rule not found
+
+  /api/intelligence/sigma:
+    get:
+      tags: [Intelligence]
+      operationId: listSigmaRules
+      summary: List Sigma rules
+      description: Returns all loaded Sigma detection rules.
+      responses:
+        "200":
+          description: Sigma rule list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rules:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/SigmaRuleResponse"
+                  total:
+                    type: integer
+    post:
+      tags: [Intelligence]
+      operationId: addSigmaRule
+      summary: Add a Sigma rule
+      description: Adds a new Sigma detection rule.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddSigmaRuleRequest"
+      responses:
+        "200":
+          description: Sigma rule added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  name:
+                    type: string
+
+  /api/intelligence/sigma/{name}:
+    get:
+      tags: [Intelligence]
+      operationId: getSigmaRule
+      summary: Get Sigma rule
+      description: Returns a single Sigma rule by name.
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Sigma rule details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SigmaRuleResponse"
+        "404":
+          description: Sigma rule not found
+
+  /api/intelligence/cves:
+    get:
+      tags: [Intelligence]
+      operationId: listCves
+      summary: List CVEs
+      description: Returns up to 100 tracked CVE vulnerability entries.
+      responses:
+        "200":
+          description: CVE list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cves:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CveEntry"
+                  total:
+                    type: integer
+    post:
+      tags: [Intelligence]
+      operationId: addCve
+      summary: Add a CVE entry
+      description: Adds a new CVE vulnerability to the intelligence engine.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddCveRequest"
+      responses:
+        "200":
+          description: CVE added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  id:
+                    type: string
+
+  /api/intelligence/cves/{id}:
+    get:
+      tags: [Intelligence]
+      operationId: getCve
+      summary: Get CVE entry
+      description: Returns a single CVE entry by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: CVE identifier (e.g. CVE-2024-1234)
+          schema:
+            type: string
+      responses:
+        "200":
+          description: CVE details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CveEntry"
+        "404":
+          description: CVE not found
+
+  /api/intelligence/reputation:
+    get:
+      tags: [Intelligence]
+      operationId: getReputation
+      summary: Global reputation score
+      description: Returns the global threat reputation score for the host.
+      responses:
+        "200":
+          description: Reputation score
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  score:
+                    type: number
+                  known_malicious:
+                    type: integer
+                  detection_count:
+                    type: integer
+                  sources:
+                    type: array
+                    items:
+                      type: string
+                  last_checked:
+                    type: string
+                    format: date-time
+
+  # ── Fleet ─────────────────────────────────────────────────────────────────
+  /api/fleet:
+    get:
+      tags: [Fleet]
+      operationId: fleetOverview
+      summary: Fleet overview
+      description: Returns fleet-wide overview including agent counts and status.
+      responses:
+        "200":
+          description: Fleet overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FleetOverview"
+
+  /api/fleet/agents:
+    get:
+      tags: [Fleet]
+      operationId: fleetAgents
+      summary: List fleet agents
+      description: Returns all registered fleet agents.
+      responses:
+        "200":
+          description: Agent list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agents:
+                    type: array
+                  total:
+                    type: integer
+
+  /api/fleet/agents/{id}:
+    get:
+      tags: [Fleet]
+      operationId: fleetAgentDetail
+      summary: Agent detail
+      description: Returns detailed information for a specific fleet agent.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                type: object
+        "404":
+          description: Agent not found
+
+  /api/fleet/agents/{id}/deregister:
+    post:
+      tags: [Fleet]
+      operationId: fleetDeregisterAgent
+      summary: Deregister agent
+      description: Removes a fleet agent from the registry.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Agent deregistered
+
+  /api/fleet/heartbeat:
+    post:
+      tags: [Fleet]
+      operationId: fleetHeartbeat
+      summary: Send heartbeat
+      description: |
+        Processes a heartbeat from a fleet agent. If the agent is unknown,
+        it is automatically registered.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HeartbeatPayload"
+      responses:
+        "200":
+          description: Heartbeat processed
+
+  /api/fleet/policies:
+    get:
+      tags: [Fleet]
+      operationId: fleetPolicies
+      summary: List fleet policies
+      description: Returns all distributed fleet policies.
+      responses:
+        "200":
+          description: Policy list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  policies:
+                    type: array
+                  total:
+                    type: integer
+    post:
+      tags: [Fleet]
+      operationId: fleetDistributePolicy
+      summary: Distribute a policy
+      description: Distributes a configuration policy to fleet agents.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DistributePolicyRequest"
+      responses:
+        "200":
+          description: Policy distributed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  policy_id:
+                    type: string
+                  message:
+                    type: string
+        "500":
+          description: Failed to distribute policy
+
+  /api/fleet/actions:
+    get:
+      tags: [Fleet]
+      operationId: fleetActions
+      summary: List remote actions
+      description: Returns up to 100 recent remote fleet actions.
+      responses:
+        "200":
+          description: Action list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actions:
+                    type: array
+                  total:
+                    type: integer
+    post:
+      tags: [Fleet]
+      operationId: fleetRequestAction
+      summary: Request a remote action
+      description: Sends a remote action request to a specific fleet agent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestActionRequest"
+      responses:
+        "200":
+          description: Action requested
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action_id:
+                    type: string
+                  message:
+                    type: string
+        "400":
+          description: Invalid action type
+        "500":
+          description: Failed to request action
+
+  /api/fleet/actions/{id}:
+    get:
+      tags: [Fleet]
+      operationId: fleetActionDetail
+      summary: Action detail
+      description: Returns details for a specific remote fleet action.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Action details
+          content:
+            application/json:
+              schema:
+                type: object
+        "404":
+          description: Action not found
+
+  /api/fleet/stats:
+    get:
+      tags: [Fleet]
+      operationId: fleetStats
+      summary: Fleet statistics
+      description: Returns fleet-wide statistics.
+      responses:
+        "200":
+          description: Fleet statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FleetStatsResponse"
+
+components:
+  schemas:
+    # ── System ────────────────────────────────────────────────────────────
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        version:
+          type: string
+          example: "1.0.0"
+
+    StatusResponse:
+      type: object
+      properties:
+        metrics:
+          $ref: "#/components/schemas/MetricsSnapshot"
+        detector_count:
+          type: integer
+
+    MetricsSnapshot:
+      type: object
+      properties:
+        total_scans:
+          type: integer
+        threats_detected:
+          type: integer
+        uptime_seconds:
+          type: integer
+
+    KernelIntegrityResponse:
+      type: object
+      properties:
+        secure_boot:
+          type: boolean
+        kptr_restricted:
+          type: boolean
+        dmesg_restrict:
+          type: boolean
+        lockdown:
+          type: string
+          enum: [none, integrity, confidentiality, not available]
+        checks:
+          type: array
+          items:
+            $ref: "#/components/schemas/IntegrityCheck"
+
+    IntegrityCheck:
+      type: object
+      properties:
+        name:
+          type: string
+        passed:
+          type: boolean
+        detail:
+          type: string
+
+    MemoryIntegrityResponse:
+      type: object
+      properties:
+        total_memory_kb:
+          type: integer
+          format: int64
+        available_memory_kb:
+          type: integer
+          format: int64
+        used_memory_kb:
+          type: integer
+          format: int64
+        swap_total_kb:
+          type: integer
+          format: int64
+        swap_used_kb:
+          type: integer
+          format: int64
+        checks:
+          type: array
+          items:
+            $ref: "#/components/schemas/IntegrityCheck"
+
+    # ── Detection ─────────────────────────────────────────────────────────
+    ScanResponse:
+      type: object
+      properties:
+        threats_found:
+          type: integer
+        threats:
+          type: array
+          items:
+            $ref: "#/components/schemas/ThreatEvent"
+
+    DetectorsResponse:
+      type: object
+      properties:
+        detectors:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              enabled:
+                type: boolean
+
+    ThreatEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        severity:
+          type: string
+          enum: [info, low, medium, high, critical]
+        category:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        source_detector:
+          type: string
+
+    # ── Threats ───────────────────────────────────────────────────────────
+    ThreatRow:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        severity:
+          type: string
+          enum: [info, low, medium, high, critical]
+        category:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        source_detector:
+          type: string
+        acknowledged:
+          type: boolean
+
+    ThreatStatsResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int64
+        unacknowledged:
+          type: integer
+          format: int64
+        critical:
+          type: integer
+          format: int64
+        high:
+          type: integer
+          format: int64
+
+    # ── Forensics ─────────────────────────────────────────────────────────
+    ForensicSnapshot:
+      type: object
+      description: Comprehensive forensic snapshot of system state
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        hostname:
+          type: string
+        processes:
+          type: array
+        kernel_modules:
+          type: array
+        network_connections:
+          type: array
+        integrity:
+          type: object
+
+    # ── Evidence ──────────────────────────────────────────────────────────
+    EvidenceListResponse:
+      type: object
+      properties:
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/EvidenceResponse"
+        total:
+          type: integer
+
+    EvidenceResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        evidence_type:
+          type: string
+        severity:
+          type: string
+        source:
+          type: string
+        description:
+          type: string
+        data:
+          type: object
+        tags:
+          type: array
+          items:
+            type: string
+        confidence:
+          type: number
+
+    EvidenceStatsResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+        by_type:
+          type: object
+          additionalProperties:
+            type: integer
+        by_severity:
+          type: object
+          additionalProperties:
+            type: integer
+        by_source:
+          type: object
+          additionalProperties:
+            type: integer
+
+    # ── Rules ─────────────────────────────────────────────────────────────
+    RulesResponse:
+      type: object
+      properties:
+        rules:
+          type: array
+          items:
+            type: object
+        total:
+          type: integer
+
+    AddRuleRequest:
+      type: object
+      required: [name, description, enabled, severity, category, condition, actions, tags]
+      properties:
+        name:
+          type: string
+          example: detect_crypto_miner
+        description:
+          type: string
+          example: Alert on known crypto mining process names
+        enabled:
+          type: boolean
+          example: true
+        severity:
+          type: string
+          enum: [info, low, medium, high, critical]
+          example: high
+        category:
+          type: string
+          example: cryptomining
+        condition:
+          type: object
+          description: Rule condition with field, operator, and value
+          properties:
+            field:
+              type: string
+            operator:
+              type: string
+              enum: [equals, contains, in, regex, gt, lt]
+            value:
+              description: Match value (string, number, or array depending on operator)
+        actions:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                description: Action type (alert, log_event, etc.)
+        tags:
+          type: array
+          items:
+            type: string
+
+    # ── Correlation ───────────────────────────────────────────────────────
+    CorrelationListResponse:
+      type: object
+      properties:
+        correlations:
+          type: array
+          items:
+            type: object
+        total:
+          type: integer
+
+    # ── Incidents ─────────────────────────────────────────────────────────
+    IncidentListResponse:
+      type: object
+      properties:
+        incidents:
+          type: array
+          items:
+            $ref: "#/components/schemas/IncidentResponse"
+        total:
+          type: integer
+
+    IncidentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [open, investigating, resolved, closed]
+        severity:
+          type: string
+          enum: [info, low, medium, high, critical]
+        confidence:
+          type: number
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        evidence_ids:
+          type: string
+          description: JSON-serialized array of evidence UUIDs
+        object_ids:
+          type: string
+          description: JSON-serialized array of related object identifiers
+        attack_chain:
+          type: string
+          description: JSON-serialized attack chain description
+        mitre_mappings:
+          type: string
+          description: JSON-serialized MITRE ATT&CK mappings
+        recommended_response:
+          type: string
+          nullable: true
+        tags:
+          type: string
+          description: JSON-serialized tag array
+
+    # ── Threat Decisions ──────────────────────────────────────────────────
+    ThreatDecisionListResponse:
+      type: object
+      properties:
+        threats:
+          type: array
+          items:
+            $ref: "#/components/schemas/ThreatDecisionResponse"
+        total:
+          type: integer
+
+    ThreatDecisionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        incident_id:
+          type: string
+          format: uuid
+        severity:
+          type: string
+          enum: [info, low, medium, high, critical]
+        risk_score_final:
+          type: number
+        confidence:
+          type: number
+        priority:
+          type: string
+        description:
+          type: string
+        recommendation:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        tags:
+          type: string
+
+    # ── Response ──────────────────────────────────────────────────────────
+    ResponseListResponse:
+      type: object
+      properties:
+        responses:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              timestamp:
+                type: string
+                format: date-time
+              threat_id:
+                type: string
+                format: uuid
+              workflow_name:
+                type: string
+              action_type:
+                type: string
+              action_params:
+                type: string
+              result:
+                type: string
+              duration_ms:
+                type: integer
+              rollback_status:
+                type: string
+              dry_run:
+                type: boolean
+        total:
+          type: integer
+
+    AuditListResponse:
+      type: object
+      properties:
+        records:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              timestamp:
+                type: string
+                format: date-time
+              threat_id:
+                type: string
+                format: uuid
+              workflow_name:
+                type: string
+              action_type:
+                type: string
+              result:
+                type: string
+              duration_ms:
+                type: integer
+              rollback_status:
+                type: string
+              dry_run:
+                type: boolean
+        total:
+          type: integer
+        summary:
+          type: object
+          properties:
+            total:
+              type: integer
+            by_result:
+              type: object
+              additionalProperties:
+                type: integer
+
+    # ── Telemetry ─────────────────────────────────────────────────────────
+    TelemetryEventListResponse:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+              provider:
+                type: string
+              category:
+                type: string
+              event_type:
+                type: string
+              pid:
+                type: integer
+              uid:
+                type: integer
+              namespace:
+                type: string
+              container:
+                type: string
+              object_id:
+                type: string
+              metadata:
+                type: object
+        total:
+          type: integer
+
+    TelemetryStatsResponse:
+      type: object
+      properties:
+        total_events:
+          type: integer
+          format: int64
+        dropped_events:
+          type: integer
+          format: int64
+        active_providers:
+          type: integer
+        buffer_size:
+          type: integer
+        buffer_capacity:
+          type: integer
+        current_rate_per_second:
+          type: number
+
+    # ── Behavior ──────────────────────────────────────────────────────────
+    RecordBehaviorEventRequest:
+      type: object
+      required: [provider, object_id, category, event_type, description]
+      properties:
+        provider:
+          type: string
+          example: process_monitor
+        object_id:
+          type: string
+          example: process/1234
+        category:
+          type: string
+          description: Behavior category (execution, network, file, etc.)
+          example: execution
+        event_type:
+          type: string
+          example: process_start
+        pid:
+          type: integer
+          nullable: true
+        uid:
+          type: integer
+          nullable: true
+        command_line:
+          type: string
+          nullable: true
+        description:
+          type: string
+          example: Suspicious process started
+        severity:
+          type: string
+          nullable: true
+          enum: [info, low, medium, high, critical]
+        confidence:
+          type: number
+          nullable: true
+          minimum: 0.0
+          maximum: 1.0
+        metadata:
+          type: object
+          nullable: true
+
+    # ── Intelligence ──────────────────────────────────────────────────────
+    IoCResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [hash, ip_address, domain, filename, url, email]
+        value:
+          type: string
+        severity:
+          type: string
+          enum: [info, low, medium, high, critical]
+        confidence:
+          type: number
+        source:
+          type: string
+        description:
+          type: string
+        first_seen:
+          type: string
+          format: date-time
+        last_seen:
+          type: string
+          format: date-time
+
+    AddIoCRequest:
+      type: object
+      required: [ioc_type, value, severity, confidence, source, description]
+      properties:
+        ioc_type:
+          type: string
+          enum: [hash, ip_address, domain, filename, url, email]
+        value:
+          type: string
+        severity:
+          type: string
+          enum: [info, low, medium, high, critical]
+        confidence:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+        source:
+          type: string
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+          nullable: true
+
+    MitreTechnique:
+      type: object
+      properties:
+        id:
+          type: string
+          example: T1059
+        name:
+          type: string
+          example: Command and Scripting Interpreter
+        description:
+          type: string
+        tactic:
+          type: string
+          example: execution
+        detection:
+          type: string
+
+    YaraRuleResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        author:
+          type: string
+        severity:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        enabled:
+          type: boolean
+
+    AddYaraRuleRequest:
+      type: object
+      required: [name, description, author, severity, tags, rule_content]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        author:
+          type: string
+        severity:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        rule_content:
+          type: string
+          description: Raw YARA rule source text
+
+    SigmaRuleResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        author:
+          type: string
+        severity:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        detection_condition:
+          type: string
+        enabled:
+          type: boolean
+
+    AddSigmaRuleRequest:
+      type: object
+      required: [name, description, author, severity, tags, detection_condition]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        author:
+          type: string
+        severity:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        logsource_category:
+          type: string
+          nullable: true
+        logsource_product:
+          type: string
+          nullable: true
+        logsource_service:
+          type: string
+          nullable: true
+        detection_condition:
+          type: string
+        detection_fields:
+          type: array
+          items:
+            type: string
+          nullable: true
+        falsepositives:
+          type: array
+          items:
+            type: string
+          nullable: true
+
+    CveEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          example: CVE-2024-1234
+        description:
+          type: string
+        severity:
+          type: string
+          enum: [info, low, medium, high, critical]
+        cvss_score:
+          type: number
+        affected_products:
+          type: array
+          items:
+            type: string
+        published_at:
+          type: string
+          format: date-time
+
+    AddCveRequest:
+      type: object
+      required: [id, description, severity, cvss_score]
+      properties:
+        id:
+          type: string
+          example: CVE-2024-1234
+        description:
+          type: string
+        severity:
+          type: string
+          enum: [info, low, medium, high, critical]
+        cvss_score:
+          type: number
+          minimum: 0.0
+          maximum: 10.0
+        affected_products:
+          type: array
+          items:
+            type: string
+          nullable: true
+        references:
+          type: array
+          items:
+            type: string
+          nullable: true
+
+    # ── Fleet ─────────────────────────────────────────────────────────────
+    FleetOverview:
+      type: object
+      properties:
+        total_agents:
+          type: integer
+        healthy_agents:
+          type: integer
+        degraded_agents:
+          type: integer
+        offline_agents:
+          type: integer
+        total_heartbeats:
+          type: integer
+        total_incidents:
+          type: integer
+        total_threats:
+          type: integer
+        total_policies:
+          type: integer
+        total_actions:
+          type: integer
+        uptime_secs:
+          type: integer
+
+    FleetStatsResponse:
+      type: object
+      properties:
+        total_agents:
+          type: integer
+        healthy_agents:
+          type: integer
+        degraded_agents:
+          type: integer
+        offline_agents:
+          type: integer
+        total_heartbeats:
+          type: integer
+        total_incidents:
+          type: integer
+        total_threats:
+          type: integer
+        total_policies:
+          type: integer
+        total_actions:
+          type: integer
+        uptime_secs:
+          type: integer
+
+    HeartbeatPayload:
+      type: object
+      properties:
+        agent_id:
+          type: string
+        hostname:
+          type: string
+        status:
+          type: string
+          enum: [healthy, degraded, offline]
+        version:
+          type: string
+
+    DistributePolicyRequest:
+      type: object
+      required: [name, policy_type, config]
+      properties:
+        name:
+          type: string
+        policy_type:
+          type: string
+          description: Policy type (e.g. monitoring, detection, response)
+        config:
+          type: object
+          description: Policy-specific configuration payload
+
+    RequestActionRequest:
+      type: object
+      required: [agent_id, action_type, params]
+      properties:
+        agent_id:
+          type: string
+        action_type:
+          type: string
+          description: Remote action type (scan, forensics, etc.)
+        params:
+          type: object
+          description: Action-specific parameters
+
+  # ── Error Responses ─────────────────────────────────────────────────────
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Resource not found
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Validation error
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Internal server error

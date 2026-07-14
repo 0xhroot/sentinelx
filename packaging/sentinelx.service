@@ -1,0 +1,42 @@
+[Unit]
+Description=SentinelX Runtime Integrity & Rootkit Detection Platform
+Documentation=https://docs.sentinelx.dev
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/sentinelx-backend
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+User=root
+Group=root
+
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_SYS_PTRACE CAP_AUDIT_CONTROL CAP_SYSLOG
+AmbientCapabilities=CAP_NET_ADMIN CAP_SYS_PTRACE CAP_AUDIT_CONTROL CAP_SYSLOG
+NoNewPrivileges=false
+
+ProtectSystem=strict
+ReadWritePaths=/var/lib/sentinelx /etc/sentinelx
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+SystemCallFilter=@system-service
+SystemCallArchitectures=native
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sentinelx
+
+Environment=RUST_LOG=info
+
+[Install]
+WantedBy=multi-user.target

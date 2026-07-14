@@ -1,0 +1,33 @@
+[package]
+name = "sentinelx-database"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "SQLite database layer for SentinelX"
+
+[dependencies]
+sentinelx-common.workspace = true
+sentinelx-evidence.workspace = true
+sentinelx-assessment.workspace = true
+sentinelx-incident.workspace = true
+sentinelx-threat.workspace = true
+sentinelx-response.workspace = true
+sentinelx-telemetry.workspace = true
+sentinelx-behavior.workspace = true
+sentinelx-intelligence.workspace = true
+sqlx.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+chrono.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+thiserror.workspace = true
+sha2.workspace = true
+hex.workspace = true
+async-trait.workspace = true
+
+[dev-dependencies]
+tempfile = "3"
+tokio = { workspace = true, features = ["test-util", "macros"] }
