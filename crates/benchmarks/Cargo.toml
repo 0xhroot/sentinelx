@@ -39,4 +39,4 @@ sentinelx-reporting = { workspace = true }
 sentinelx-telemetry = { workspace = true }
 
 [dev-dependencies]
-criterion = { version = "0.5", features = ["html_reports", "async_tokio"] }
+criterion = { version = "0.8", features = ["html_reports", "async_tokio"] }
