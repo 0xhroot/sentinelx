@@ -1,134 +1,263 @@
 <div align="center">
 
-# SentinelX
+<!-- SentinelX Logo -->
+<img src="https://img.shields.io/badge/SentinelX-Evidence_Driven_Security-0x1?style=for-the-badge&logo=rust&logoColor=white&color=0x1" alt="SentinelX Badge" />
+
+# `SentinelX`
 
 **Enterprise Linux Runtime Integrity & Rootkit Detection Platform**
 
-[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0--or--later-blue.svg)](LICENSE)
-[![CI](https://github.com/sentinelx/sentinelx/actions/workflows/ci.yml/badge.svg)](https://github.com/sentinelx/sentinelx/actions/workflows/ci.yml)
-[![Rust Version](https://img.shields.io/badge/Rust-1.75%2B-orange.svg)](https://www.rust-lang.org/)
-[![Platform](https://img.shields.io/badge/Platform-Linux-lightgrey.svg)](https://www.kernel.org/)
-[![Version](https://img.shields.io/badge/Version-1.0.0-green.svg)](VERSION)
-[![Tests](https://img.shields.io/badge/Tests-696%20passing-brightgreen.svg)](#testing)
-[![Security](https://img.shields.io/badge/Security-audit%20clean-yellow.svg)](SECURITY.md)
-[![Docker](https://img.shields.io/badge/Docker-available-blue.svg)](#docker)
+<!-- Typing SVG -->
+<a href="https://git.io/typing-svg">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&color=3776AB&center=true&vCenter=true&random=false&width=600&height=100&lines=Evidence+Driven+Threat+Detection;Real-time+Kernel+Telemetry;Memory+Safe+Rust+EDR;Automated+Incident+Response;Fleet+Management+at+Scale" alt="Typing SVG" />
+</a>
 
-A memory-safe, high-performance Linux security platform built in Rust with real-time kernel-level telemetry via eBPF, fanotify, netlink, and audit sockets. SentinelX provides evidence-driven threat detection, automated incident response, and fleet management for enterprise environments.
+<br />
 
-[Quick Start](#quick-start) | [Installation](#installation) | [Architecture](#architecture-overview) | [CLI Reference](#cli-reference) | [API Reference](#rest-api) | [Documentation](#documentation)
+<!-- Badges Row 1: Core -->
+<a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0--or--later-blue.svg?style=flat-square&logo=gnu&logoColor=white" alt="License" /></a>
+<a href="VERSION"><img src="https://img.shields.io/badge/Version-1.0.0-brightgreen.svg?style=flat-square&logo=semantic-release&logoColor=white" alt="Version" /></a>
+<a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/Rust-1.75%2B-orange.svg?style=flat-square&logo=rust&logoColor=white" alt="Rust" /></a>
+<a href="https://github.com/0xhroot/sentinelx/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/0xhroot/sentinelx/ci.yml?style=flat-square&label=CI&logo=github-actions&logoColor=white" alt="CI" /></a>
+<a href="SECURITY.md"><img src="https://img.shields.io/badge/Security-Audit_Clean-yellow.svg?style=flat-square&logo=security&logoColor=white" alt="Security" /></a>
+<a href="#testing"><img src="https://img.shields.io/badge/Tests-696_Passing-brightgreen.svg?style=flat-square&logo=testflight&logoColor=white" alt="Tests" /></a>
+
+<br />
+
+<!-- Badges Row 2: Platform & Community -->
+<a href="https://www.kernel.org/"><img src="https://img.shields.io/badge/Platform-Linux_5.8%2B-222222.svg?style=flat-square&logo=linux&logoColor=white" alt="Platform" /></a>
+<a href="#docker"><img src="https://img.shields.io/badge/Docker-Available-2496ED.svg?style=flat-square&logo=docker&logoColor=white" alt="Docker" /></a>
+<a href="https://github.com/0xhroot/sentinelx/stargazers"><img src="https://img.shields.io/github/stars/0xhroot/sentinelx?style=flat-square&logo=github&logoColor=white&color=yellow" alt="Stars" /></a>
+<a href="https://github.com/0xhroot/sentinelx/network/members"><img src="https://img.shields.io/github/forks/0xhroot/sentinelx?style=flat-square&logo=github&logoColor=white" alt="Forks" /></a>
+<a href="https://github.com/0xhroot/sentinelx/issues"><img src="https://img.shields.io/github/issues/0xhroot/sentinelx?style=flat-square&logo=github&logoColor=white" alt="Issues" /></a>
+<a href="https://github.com/0xhroot/sentinelx/discussions"><img src="https://img.shields.io/github/discussions/0xhroot/sentinelx?style=flat-square&logo=github&logoColor=white" alt="Discussions" /></a>
+<a href="https://github.com/0xhroot/sentinelx/pulse"><img src="https://img.shields.io/github/last-commit/0xhroot/sentinelx?style=flat-square&logo=github&logoColor=white" alt="Last Commit" /></a>
+
+<br />
+<br />
+
+<!-- Quick Action Buttons -->
+
+<a href="#-quick-start">
+  <img src="https://img.shields.io/badge/⚡_Quick_Start-Get_Started-0097e6?style=for-the-badge&logo=rocket&logoColor=white" alt="Quick Start" />
+</a>
+<a href="#-architecture-overview">
+  <img src="https://img.shields.io/badge/🏗️_Architecture-How_It_Works-6c5ce7?style=for-the-badge&logo=mermaid&logoColor=white" alt="Architecture" />
+</a>
+<a href="#rest-api">
+  <img src="https://img.shields.io/badge/🔌_API_Reference-86_Endpoints-00b894?style=for-the-badge&logo=postman&logoColor=white" alt="API" />
+</a>
+<a href="https://github.com/0xhroot/sentinelx/blob/main/docs/INSTALL.md">
+  <img src="https://img.shields.io/badge/📖_Documentation-Install_Guide-e17055?style=for-the-badge&logo=readthedocs&logoColor=white" alt="Documentation" />
+</a>
+
+<br />
+
+<img src="https://img.shields.io/badge/Built_with_❤️_in-Rust-000000.svg?style=flat-square&logo=rust&logoColor=white" alt="Built with Rust" />
 
 </div>
 
 ---
 
-## Table of Contents
+<div align="center">
 
-- [Executive Summary](#executive-summary)
-- [Key Features](#key-features)
-- [Architecture Overview](#architecture-overview)
-- [Complete Processing Pipeline](#complete-processing-pipeline)
-- [Project Architecture](#project-architecture)
-- [Core Concepts](#core-concepts)
-- [Detection Methodology](#detection-methodology)
-- [Threat Lifecycle](#threat-lifecycle)
-- [Directory Structure](#directory-structure)
-- [Technology Stack](#technology-stack)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [CLI Reference](#cli-reference)
-- [REST API](#rest-api)
-- [Dashboard](#dashboard)
-- [Fleet Management](#fleet-management)
-- [Security Model](#security-model)
-- [Performance](#performance)
-- [Testing](#testing)
-- [Development Guide](#development-guide)
-- [Plugin Architecture](#plugin-architecture)
-- [Roadmap](#roadmap)
-- [Comparison](#comparison-with-other-tools)
-- [Screenshots](#screenshots)
-- [FAQ](#frequently-asked-questions)
-- [Contributing](#contributing)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+<!-- Gradient Separator -->
+<img width="100%" height="3" alt="divider" src="https://raw.githubusercontent.com/0xhroot/sentinelx/main/docs/assets/divider.svg" />
 
----
+<!-- Fallback gradient if SVG not yet available -->
+<img width="100%" height="3" alt="" style="background: linear-gradient(90deg, #0097e6, #6c5ce7, #e17055, #00b894); display: block;" />
 
-## Executive Summary
+</div>
 
-### What SentinelX Is
+<br />
 
-SentinelX is an open-source, evidence-driven Linux runtime integrity monitoring and rootkit detection platform written entirely in Rust. It provides real-time kernel-level telemetry, multi-engine threat detection, automated incident response, and fleet-wide coordination for enterprise security operations.
+## 🔍 What Is SentinelX?
 
-### Why SentinelX Was Built
+> [!IMPORTANT]
+> SentinelX is an **open-source, evidence-driven** Linux runtime integrity monitoring and rootkit detection platform written entirely in **Rust**. It provides real-time kernel-level telemetry, multi-engine threat detection, automated incident response, and fleet-wide coordination for enterprise security operations.
 
-Existing Linux security tools force uncomfortable tradeoffs:
+```
+   ┌─────────────────────────────────────────────────────┐
+   │              SentinelX Pipeline                      │
+   │                                                      │
+   │   Kernel ─▶ Telemetry ─▶ Discovery ─▶ Assessment    │
+   │                                    ─▶ Evidence       │
+   │                                    ─▶ Correlation    │
+   │                                    ─▶ Response       │
+   │                                                      │
+   │   🔒 Immutable    ⚡ Real-time    🛡️ Automated      │
+   └─────────────────────────────────────────────────────┘
+```
+
+**Why was it built?**
 
 | Problem | Existing Tools | SentinelX |
 |---------|---------------|-----------|
-| **Kernel visibility** | eBPF-only tools lack filesystem/audit context | Unified telemetry across eBPF, fanotify, netlink, audit |
-| **Detection accuracy** | Signature-based tools produce high false-positive rates | Evidence-driven pipeline with 5-dimension scoring |
-| **Response capability** | Detection-only tools require manual intervention | Automated response with safety controls and rollback |
+| **Kernel visibility** | eBPF-only tools lack filesystem/audit context | Unified: eBPF + fanotify + netlink + audit |
+| **Detection accuracy** | Signature-based tools produce high false positives | Evidence-driven pipeline with 5-dimension scoring |
+| **Response capability** | Detection-only tools require manual intervention | Automated response with safety controls & rollback |
 | **Fleet management** | Single-host tools lack multi-host coordination | Built-in fleet management with TLS transport |
-| **Memory safety** | C/C++ tools are vulnerable to exploitation | Written in Rust with minimal unsafe (52 FFI blocks) |
+| **Memory safety** | C/C++ tools are vulnerable to exploitation | Written in Rust with minimal unsafe (52 audited FFI blocks) |
 | **Architecture** | Monolithic tools resist extension | 34-crate modular workspace |
 
-### Design Philosophy
+**Design Philosophy:**
 
-1. **Evidence is immutable.** Once created, `CoreEvidence` objects cannot be modified, ensuring forensic integrity.
-2. **Graceful degradation.** Every subsystem has fallback paths. If eBPF is unavailable, fanotify is used. If fanotify fails, audit sockets take over.
-3. **Safety by default.** The response engine defaults to dry-run mode, never kills PID 1, never unloads core kernel modules, and never quarantines system binaries.
-4. **Pipeline-driven.** All data flows through a consistent 4-layer pipeline: Discovery, Metadata, Assessment, Evidence.
+1. **Evidence is immutable.** `CoreEvidence` objects cannot be modified once created — ensuring forensic integrity.
+2. **Graceful degradation.** Every subsystem has fallback paths. eBPF unavailable? fanotify takes over.
+3. **Safety by default.** Dry-run mode. Never kills PID 1. Never unloads core modules. Never quarantines system binaries.
+4. **Pipeline-driven.** All data flows through 4 layers: Discovery → Metadata → Assessment → Evidence.
 5. **Offline-first.** Threat intelligence, MITRE ATT&CK mappings, and detection rules work without network connectivity.
 
----
-
-## Key Features
-
-| Category | Feature | Description |
-|----------|---------|-------------|
-| **Architecture** | Evidence-driven pipeline | 4-layer processing: Discovery, Metadata, Assessment, Evidence |
-| **Architecture** | 34-crate workspace | Modular Rust crates with clear separation of concerns |
-| **Architecture** | Async runtime | Tokio-based async processing with bounded channels |
-| **Detection** | Kernel integrity | Detects hooked syscalls, modified kernel structures, DKOM attacks |
-| **Detection** | Process scanning | Hidden processes, suspicious forks, privilege escalation |
-| **Detection** | Module scanning | Unsigned modules, hidden modules, DKOM detection |
-| **Detection** | Network scanning | Hidden connections, reverse shells, suspicious sockets |
-| **Detection** | Memory scanning | Memory tampering, injected code, process memory anomalies |
-| **Detection** | File integrity | Critical file modification, permission changes, new executables |
-| **Detection** | Persistence scanning | Systemd, cron, rc.local, LD_PRELOAD, init scripts |
-| **Telemetry** | eBPF sensor | Real-time kernel events via Aya framework |
-| **Telemetry** | fanotify | Filesystem-level event monitoring |
-| **Telemetry** | Netlink | Network interface, route, and neighbor changes |
-| **Telemetry** | Audit subsystem | Audit daemon integration via NETLINK_AUDIT |
-| **Telemetry** | Provider fallback | Automatic degradation: eBPF, fanotify, netlink, audit, proc |
-| **Analysis** | Correlation engine | Relationship graph, TOML-driven rules, multi-indicator detection |
-| **Analysis** | Incident management | Lifecycle tracking: Open, Investigating, Contained, Resolved, Closed |
-| **Analysis** | Threat scoring | 5-dimension risk assessment: Trust, Integrity, Risk, Reputation, Confidence |
-| **Analysis** | Behavior profiling | Weighted scoring across 7 behavioral factors |
-| **Analysis** | Threat intelligence | IoCs, MITRE ATT&CK, YARA, Sigma, CVE tracking |
-| **Response** | Automated response | 22 response actions with safety controls and rollback |
-| **Response** | Safety controls | Dry-run mode, PID 1 protection, core module protection |
-| **Response** | Audit logging | Full response audit trail with rollback tracking |
-| **Fleet** | Coordinator | Central coordination for multi-host deployments |
-| **Fleet** | Agents | Endpoint agents with heartbeat monitoring |
-| **Fleet** | TLS transport | rustls-based mTLS with gzip compression |
-| **Fleet** | Policy distribution | Push policies to fleet agents |
-| **Dashboard** | Web UI | React + TypeScript SPA with 10 monitoring pages |
-| **API** | REST API | 86 endpoints covering all subsystems |
-| **CLI** | 34 commands | Complete command-line interface for all operations |
-| **Packaging** | Multi-format | PKGBUILD, DEB, RPM, Docker, systemd |
-| **Performance** | Optimized build | LTO, single codegen unit, stripped binaries |
-| **Security** | Memory safe | Rust with minimal unsafe; all unsafe blocks audited |
+<br />
 
 ---
 
-## Architecture Overview
+## 🦀 Why SentinelX?
+
+<div align="center">
+
+| | | |
+|:---:|:---:|:---:|
+| **🛡️ Evidence Driven** | **⚡ Real-time Telemetry** | **🦀 Memory Safe** |
+| Immutable evidence ensures forensic integrity | Kernel-level events via eBPF, fanotify, netlink, audit | Written in Rust — no buffer overflows, no use-after-free |
+| **🔬 Behavior Analysis** | **🚀 Fleet Management** | **📊 Dashboard** |
+| 7-factor weighted behavioral profiling | Multi-host coordination with TLS/mTLS | React + TypeScript SPA with 10 monitoring pages |
+| **🔍 7 Detection Engines** | **🤖 Automated Response** | **🧠 Threat Intelligence** |
+| Process, module, network, kernel, memory, file, persistence | 22 response actions with safety controls & rollback | IoCs, MITRE ATT&CK, YARA, Sigma, CVE tracking |
+
+</div>
+
+<br />
+
+---
+
+## 📊 Project At A Glance
+
+<div align="center">
+
+| | | | |
+|:---:|:---:|:---:|:---:|
+| **40** | **696** | **86** | **34** |
+| Rust Crates | Tests Passing | REST API Endpoints | CLI Commands |
+| **10** | **1.0.0** | **22** | **6** |
+| Architecture Phases | Stable Release | Response Actions | Fuzz Targets |
+
+</div>
+
+<br />
+
+> [!TIP]
+> **New to SentinelX?** Jump straight to the [Quick Start](#-quick-start) or explore the [Architecture Overview](#-architecture-overview).
+
+---
+
+## 🖥️ Demo
+
+> [!NOTE]
+> Screenshots and GIFs are placeholders. Replace with actual media before the next release.
+
+<table>
+  <tr>
+    <td align="center"><b>Dashboard Overview</b></td>
+    <td align="center"><b>CLI Scan Output</b></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/assets/dashboard-overview.png" alt="Dashboard Overview" width="400" />
+      <br />
+      <sub>System health, key metrics, recent alerts</sub>
+    </td>
+    <td align="center">
+      <img src="docs/assets/cli-scan.png" alt="CLI Scan" width="400" />
+      <br />
+      <sub>Terminal-based detection results</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>Threats View</b></td>
+    <td align="center"><b>Architecture Diagram</b></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/assets/threats-view.png" alt="Threats View" width="400" />
+      <br />
+      <sub>Active threats with severity & MITRE mapping</sub>
+    </td>
+    <td align="center">
+      <img src="docs/assets/architecture.png" alt="Architecture" width="400" />
+      <br />
+      <sub>Full system architecture</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>Fleet Management</b></td>
+    <td align="center"><b>Telemetry Feed</b></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/assets/fleet-view.png" alt="Fleet View" width="400" />
+      <br />
+      <sub>Multi-host agent status & health</sub>
+    </td>
+    <td align="center">
+      <img src="docs/assets/telemetry-feed.png" alt="Telemetry Feed" width="400" />
+      <br />
+      <sub>Real-time kernel events</sub>
+    </td>
+  </tr>
+</table>
+
+<!-- Video placeholder
+<div align="center">
+  <a href="https://www.youtube.com/watch?v=YOUR_VIDEO_ID">
+    <img src="https://img.shields.io/badge/Watch_Demo-Video-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch Demo" />
+  </a>
+</div>
+-->
+
+<br />
+
+---
+
+## ⚡ Quick Start
+
+### Three commands to start detecting threats:
+
+```bash
+git clone https://github.com/0xhroot/sentinelx && cd sentinelx
+cargo build --release
+sudo ./target/release/sentinelx-backend --host 0.0.0.0 --port 8443
+```
+
+Then in another terminal:
+
+```bash
+# Run a full system scan
+sudo ./target/release/sentinelx-cli scan
+
+# Check system status
+sudo ./target/release/sentinelx-cli status
+
+# View detected threats
+sudo ./target/release/sentinelx-cli threats
+
+# Enable continuous monitoring
+sudo ./target/release/sentinelx-cli monitor --interval 30
+
+# Open the dashboard at http://localhost:8443
+```
+
+> [!NOTE]
+> SentinelX requires **root privileges** for kernel-level monitoring (eBPF, fanotify, netlink, audit). Some features can run without root, but full detection capability requires root.
+
+---
+
+## 🏗️ Architecture Overview
 
 SentinelX processes security data through a pipeline of specialized subsystems. Each subsystem is implemented as one or more Rust crates in the workspace.
 
-### Subsystem Overview
+<details>
+<summary><b>📐 System Architecture — Click to expand</b></summary>
 
 ```mermaid
 graph TB
@@ -205,7 +334,10 @@ graph TB
     API --> DB
 ```
 
-### Subsystem Responsibilities
+</details>
+
+<details>
+<summary><b>📦 Subsystem Responsibilities — Click to expand</b></summary>
 
 | Subsystem | Crate(s) | Responsibility |
 |-----------|----------|---------------|
@@ -224,11 +356,18 @@ graph TB
 | **Database** | `database` | SQLite persistence for all data |
 | **Configuration** | `config` | TOML-based configuration management |
 
+</details>
+
+<br />
+
 ---
 
-## Complete Processing Pipeline
+### 🔄 Complete Processing Pipeline
 
 Every piece of security data flows through SentinelX via this pipeline:
+
+<details>
+<summary><b>📈 Pipeline Flow — Click to expand</b></summary>
 
 ```mermaid
 flowchart TD
@@ -259,11 +398,12 @@ flowchart TD
     O -->|BehaviorProfiles| P[Intelligence Engine]
 ```
 
-### Pipeline Stages Explained
+</details>
+
+<details>
+<summary><b>📋 Pipeline Stages — Click to expand</b></summary>
 
 **Stage 1: Kernel Data Collection**
-
-The telemetry layer collects raw events from four kernel subsystems simultaneously:
 
 | Provider | Source | Events Captured |
 |----------|--------|----------------|
@@ -273,8 +413,6 @@ The telemetry layer collects raw events from four kernel subsystems simultaneous
 | Audit | NETLINK_AUDIT socket | Syscall auditing, security events, access control |
 
 **Stage 2: Discovery**
-
-Seven discovery providers scan the system for security-relevant objects:
 
 | Provider | Objects Discovered |
 |----------|-------------------|
@@ -288,16 +426,12 @@ Seven discovery providers scan the system for security-relevant objects:
 
 **Stage 3: Metadata Enrichment**
 
-Each discovered object is enriched with additional context:
+- **Process**: parent PID, command line, open files, capabilities, execution history
+- **Module**: signature status, source (in-tree/out-of-tree), load address
+- **Network**: connection state, remote endpoint, protocol, socket options
+- **File**: SHA-256 hash, permissions, owner, modification time, SELinux context
 
-- Process: parent PID, command line, open files, capabilities, execution history
-- Module: signature status, source (in-tree/out-of-tree), load address
-- Network: connection state, remote endpoint, protocol, socket options
-- File: SHA-256 hash, permissions, owner, modification time, SELinux context
-
-**Stage 4: Assessment**
-
-Seven assessors score each object across five dimensions:
+**Stage 4: Assessment — 5 Dimensions**
 
 | Dimension | Range | Description |
 |-----------|-------|-------------|
@@ -309,36 +443,17 @@ Seven assessors score each object across five dimensions:
 
 **Stage 5: Evidence Generation**
 
-Objects with non-None risk levels produce immutable `CoreEvidence` objects containing:
-
-- Unique evidence ID
-- Object reference and type
-- All five assessment scores
-- Collection timestamp
-- Source detector name
-- Raw metadata
+Objects with non-None risk levels produce immutable `CoreEvidence` objects containing: unique evidence ID, object reference, all five assessment scores, collection timestamp, source detector name, and raw metadata.
 
 **Stage 6: Correlation**
 
-The correlation engine identifies multi-indicator attacks using:
-
-- **In-memory graph** for relationship modeling
-- **TOML-driven rules** with 6 default patterns
-- **Time-window analysis** (300s and 600s windows)
-- **Evidence clustering** across detectors
+The correlation engine identifies multi-indicator attacks using: in-memory graph for relationship modeling, TOML-driven rules with 6 default patterns, time-window analysis (300s and 600s windows), and evidence clustering across detectors.
 
 **Stage 7: Incident Creation**
 
-Correlated evidence produces incidents with:
-
-- Lifecycle status tracking (Open, Investigating, Contained, Resolved, Closed)
-- Attack chain reconstruction
-- MITRE ATT&CK mapping
-- Severity escalation (only upward)
+Correlated evidence produces incidents with lifecycle status tracking (Open → Investigating → Contained → Resolved → Closed), attack chain reconstruction, MITRE ATT&CK mapping, and severity escalation (only upward).
 
 **Stage 8: Threat Decision**
-
-The threat engine generates decisions with weighted risk scores:
 
 ```
 Final Score = Trust(20%) + Integrity(20%) + Risk(25%) + Reputation(15%) + Evidence(10%) + Complexity(10%)
@@ -346,79 +461,78 @@ Final Score = Trust(20%) + Integrity(20%) + Risk(25%) + Reputation(15%) + Eviden
 
 **Stage 9: Response Execution**
 
-The response engine selects and executes actions based on:
+The response engine selects and executes actions based on severity thresholds (critical, high, medium, low), confidence levels, threat type matching, and safety controls (dry-run, PID protection, module protection).
 
-- Severity thresholds (critical, high, medium, low)
-- Confidence levels
-- Threat type matching
-- Safety controls (dry-run, PID protection, module protection)
+</details>
+
+<br />
 
 ---
 
-## Project Architecture
+### 🗂️ Project Architecture
 
-### Workspace Structure
-
-The workspace contains 40 crates organized into logical groups:
+<details>
+<summary><b>📁 Workspace Structure — Click to expand</b></summary>
 
 ```
 sentinelx/
-├── crates/
-│   ├── common/          # Shared types, errors, traits
-│   ├── config/          # TOML configuration management
-│   ├── core/            # Pipeline interfaces and coordinator
-│   ├── database/        # SQLite storage via sqlx
-│   ├── telemetry/       # Metrics, tracing, event bus, providers
-│   ├── assessment/      # Central scoring engine (7 assessors)
-│   ├── detector/        # Detection engine, event bus, scoring
-│   ├── evidence/        # Indexed evidence store
-│   ├── rule_engine/     # Custom user-defined detection rules
-│   │
-│   ├── process/         # Process discovery and metadata
-│   ├── module/          # Kernel module scanning
-│   ├── network/         # Network connection scanning
-│   ├── kernel/          # Kernel integrity monitoring
-│   ├── memory/          # Memory integrity monitoring
-│   ├── integrity/       # File integrity monitoring
-│   ├── persistence/     # Persistence mechanism scanning
-│   ├── forensics/       # Forensic snapshot collection
-│   │
-│   ├── ebpf/            # eBPF kernel sensor (Aya)
-│   ├── fanotify/        # Filesystem monitoring (fanotify)
-│   ├── netlink/         # Network monitoring (AF_NETLINK)
-│   ├── audit/           # Audit subsystem (NETLINK_AUDIT)
-│   │
-│   ├── correlation/     # Relationship graph, TOML rules
-│   ├── incident/        # Incident lifecycle management
-│   ├── threat/          # Threat decisions, risk scoring
-│   ├── timeline/        # Attack timeline generation
-│   ├── behavior/        # Behavioral profiling engine
-│   ├── intelligence/    # IoCs, MITRE, YARA, Sigma, CVE
-│   │
-│   ├── response/        # Automated response, safety controls
-│   │
-│   ├── transport/       # TLS/mTLS message transport
-│   ├── agent/           # Endpoint agent
-│   ├── coordinator/     # Fleet coordinator
-│   ├── fleet/           # Fleet management
-│   │
-│   ├── benchmarks/      # Criterion benchmarks (4 suites)
-│   └── integration-tests/ # Reliability and failure mode tests
+├── crates/                 # 34 Rust library crates
+│   ├── common/             # Shared types and traits
+│   ├── config/             # Configuration management
+│   ├── core/               # Pipeline coordinator
+│   ├── database/           # SQLite storage
+│   ├── telemetry/          # Telemetry engine
+│   ├── assessment/         # Assessment engine
+│   ├── detector/           # Detection engine
+│   ├── evidence/           # Evidence store
+│   ├── rule_engine/        # Custom rules
+│   ├── process/            # Process scanning
+│   ├── module/             # Module scanning
+│   ├── network/            # Network scanning
+│   ├── kernel/             # Kernel integrity
+│   ├── memory/             # Memory integrity
+│   ├── integrity/          # File integrity
+│   ├── persistence/        # Persistence scanning
+│   ├── forensics/          # Forensic snapshots
+│   ├── ebpf/               # eBPF sensor
+│   ├── fanotify/           # fanotify monitoring
+│   ├── netlink/            # Netlink monitoring
+│   ├── audit/              # Audit subsystem
+│   ├── correlation/        # Correlation engine
+│   ├── incident/           # Incident management
+│   ├── threat/             # Threat decisions
+│   ├── timeline/           # Attack timeline
+│   ├── behavior/           # Behavior profiling
+│   ├── intelligence/       # Threat intelligence
+│   ├── response/           # Response engine
+│   ├── transport/          # TLS transport
+│   ├── agent/              # Fleet agent
+│   ├── coordinator/        # Fleet coordinator
+│   ├── fleet/              # Fleet management
+│   ├── benchmarks/         # Criterion benchmarks
+│   └── integration-tests/  # Reliability tests
 │
 ├── apps/
-│   ├── cli/             # Clap-based CLI (34 commands)
-│   └── dashboard/       # React + TypeScript SPA
+│   ├── cli/                # Command-line interface
+│   └── dashboard/          # React web dashboard
 │
-├── backend/             # Axum REST API server (86 endpoints)
-├── docs/                # Architecture and operations docs
-├── examples/            # Configuration, API, CLI examples
-├── fuzz/                # Fuzz testing targets (6 targets)
-├── packaging/           # PKGBUILD, systemd, install scripts
-├── book/                # mdBook documentation site
-└── tests/               # Integration tests
+├── backend/                # Axum REST API server
+├── docs/                   # Architecture and operations docs
+│   └── diagrams/           # Mermaid diagrams (10 files)
+├── examples/               # Configuration, API, CLI examples
+├── fuzz/                   # Fuzz testing (6 targets)
+├── packaging/              # PKGBUILD, systemd, install scripts
+├── book/                   # mdBook documentation site
+└── .github/
+    ├── workflows/          # CI/CD (3 workflows)
+    ├── ISSUE_TEMPLATE/     # Issue templates
+    └── dependabot.yml      # Dependency updates
 ```
 
-### Crate Dependency Graph
+</details>
+
+<details>
+<summary><b>🔗 Crate Dependency Graph — Click to expand</b></summary>
 
 ```mermaid
 graph TD
@@ -461,9 +575,16 @@ graph TD
     backend --> cli
 ```
 
+</details>
+
+<br />
+
 ---
 
-## Core Concepts
+## 🧠 Core Concepts
+
+<details>
+<summary><b>🧩 Objects, Evidence, Assessments, Incidents, Threats, Responses — Click to expand</b></summary>
 
 ### Objects
 
@@ -489,8 +610,6 @@ A `SentinelObject` represents any security-relevant entity on the system:
 
 ### Assessments
 
-The assessment engine scores objects across five dimensions, each producing a 0-100 score:
-
 | Dimension | Assessor | Weight |
 |-----------|----------|--------|
 | Trust | Signature verification, known-good database | 20% |
@@ -500,8 +619,6 @@ The assessment engine scores objects across five dimensions, each producing a 0-
 | Confidence | Statistical confidence in all scores | 10% (0-1.0) |
 
 ### Incidents
-
-A security incident represents a correlated set of evidence:
 
 | Field | Description |
 |-------|-------------|
@@ -522,8 +639,6 @@ A `ThreatDecision` is the final output of the analysis pipeline:
 
 ### Responses
 
-The response engine executes actions with safety controls:
-
 | Safety Control | Default | Description |
 |---------------|---------|-------------|
 | `dry_run` | `true` | Log actions without executing |
@@ -531,12 +646,17 @@ The response engine executes actions with safety controls:
 | `never_unload_core_modules` | `true` | Protect vmlinux, core, nvidia, drm, kvm |
 | `never_quarantine_system_binaries` | `true` | Protect /usr/bin, /bin, /sbin |
 | `never_delete_files` | `true` | Never delete files, only quarantine |
-| Protected PIDs | `[1]` | PIDs that cannot be killed |
-| Protected Modules | `[vmlinux, core, nvidia, drm, kvm]` | Modules that cannot be unloaded |
+
+</details>
+
+<br />
 
 ---
 
-## Detection Methodology
+## 🔬 Detection Methodology
+
+<details>
+<summary><b>📋 Evidence Immutability & Correlation — Click to expand</b></summary>
 
 ### Why Evidence Is Immutable
 
@@ -577,9 +697,14 @@ Incidents provide a higher-level view than individual threats. They:
 - Support severity escalation (only upward)
 - Map to MITRE ATT&CK techniques
 
----
+</details>
 
-## Threat Lifecycle
+<br />
+
+### 📈 Threat Lifecycle
+
+<details>
+<summary><b>🔄 Full Threat Lifecycle Sequence — Click to expand</b></summary>
 
 ```mermaid
 sequenceDiagram
@@ -620,9 +745,16 @@ sequenceDiagram
     Note over Audit: Full audit trail with<br/>rollback tracking
 ```
 
+</details>
+
+<br />
+
 ---
 
-## Directory Structure
+## 📂 Directory Structure
+
+<details>
+<summary><b>📁 Full Directory Tree — Click to expand</b></summary>
 
 ```
 sentinelx/
@@ -692,8 +824,7 @@ sentinelx/
 │   ├── OPERATIONS.md
 │   ├── SECURITY.md
 │   ├── PERFORMANCE.md
-│   ├── BENCHMARKS.md
-│   └── architecture-phase*.md
+│   └── BENCHMARKS.md
 │
 ├── examples/               # Usage examples
 │   ├── config/             # Sample configuration
@@ -723,30 +854,34 @@ sentinelx/
     └── FUNDING.yml
 ```
 
+</details>
+
+<br />
+
 ---
 
-## Technology Stack
+## 🛠️ Technology Stack
 
-| Technology | Version | Purpose | Why Selected |
-|-----------|---------|---------|-------------|
-| **Rust** | 1.75+ | Primary language | Memory safety, zero-cost abstractions, Linux kernel compatibility |
-| **Tokio** | 1.x | Async runtime | Industry-standard async Rust, excellent ecosystem |
-| **Axum** | 0.7 | HTTP framework | Tower-based, ergonomic, production-ready |
-| **SQLx** | 0.8 | Database | Async SQLite with compile-time query checks |
-| **Serde** | 1.x | Serialization | De facto standard for Rust serialization |
-| **Tracing** | 0.1 | Structured logging | Distributed tracing, structured events |
-| **Clap** | 4.x | CLI framework | Derive-based, type-safe argument parsing |
-| **Aya** | 0.14 | eBPF framework | Pure-Rust eBPF, no C dependencies |
-| **rustls** | 0.23 | TLS | Memory-safe TLS, no OpenSSL dependency |
-| **flate2** | 1.x | Compression | Gzip compression for transport |
-| **React** | 18.x | Dashboard UI | Component-based, large ecosystem |
-| **TypeScript** | 5.x | Dashboard types | Type safety for frontend |
-| **Vite** | 5.x | Dashboard build | Fast HMR, optimized builds |
-| **SQLite** | 3.x | Database | Zero-config, embedded, reliable |
-| **Docker** | - | Containerization | Standard deployment format |
-| **GitHub Actions** | - | CI/CD | Native GitHub integration |
+| Technology | Version | Purpose |
+|-----------|---------|---------|
+| **Rust** | 1.75+ | Primary language — memory safety, zero-cost abstractions |
+| **Tokio** | 1.x | Async runtime — industry-standard async Rust |
+| **Axum** | 0.7 | HTTP framework — Tower-based, ergonomic, production-ready |
+| **SQLx** | 0.8 | Database — async SQLite with compile-time query checks |
+| **Serde** | 1.x | Serialization — de facto standard for Rust |
+| **Tracing** | 0.1 | Structured logging — distributed tracing, structured events |
+| **Clap** | 4.x | CLI framework — derive-based, type-safe argument parsing |
+| **Aya** | 0.14 | eBPF framework — pure-Rust eBPF, no C dependencies |
+| **rustls** | 0.23 | TLS — memory-safe TLS, no OpenSSL dependency |
+| **flate2** | 1.x | Compression — gzip compression for transport |
+| **React** | 18.x | Dashboard UI — component-based SPA |
+| **TypeScript** | 5.x | Dashboard types — type safety for frontend |
+| **Vite** | 5.x | Dashboard build — fast HMR, optimized builds |
+| **SQLite** | 3.x | Database — zero-config, embedded, reliable |
+| **Docker** | - | Containerization — standard deployment format |
 
-### Why Rust Over C/C++
+<details>
+<summary><b>🦀 Why Rust Over C/C++? — Click to expand</b></summary>
 
 | Criterion | C/C++ | Rust |
 |-----------|-------|------|
@@ -757,9 +892,13 @@ sentinelx/
 | Testing | Multiple frameworks | Built-in `cargo test` |
 | Documentation | Varies | `cargo doc` with doc comments |
 
+</details>
+
+<br />
+
 ---
 
-## Installation
+## 📦 Installation
 
 ### System Requirements
 
@@ -772,26 +911,30 @@ sentinelx/
 | Rust | 1.75+ | Latest stable |
 | Privileges | root (for kernel access) | root |
 
-### Arch Linux
+<details>
+<summary><b>📦 Arch Linux</b></summary>
 
 ```bash
 # From AUR
 yay -S sentinelx
 
 # Or build from source
-git clone https://github.com/sentinelx/sentinelx
+git clone https://github.com/0xhroot/sentinelx
 cd sentinelx
 makepkg -si
 ```
 
-### Debian / Ubuntu
+</details>
+
+<details>
+<summary><b>📦 Debian / Ubuntu</b></summary>
 
 ```bash
 # Install dependencies
 sudo apt install build-essential libssl-dev pkg-config
 
 # Build from source
-git clone https://github.com/sentinelx/sentinelx
+git clone https://github.com/0xhroot/sentinelx
 cd sentinelx
 cargo build --release
 
@@ -802,14 +945,17 @@ sudo cp packaging/sentinelx.service /etc/systemd/system/
 sudo cp packaging/sentinelx.conf /etc/sentinelx/sentinelx.toml
 ```
 
-### Fedora / RHEL
+</details>
+
+<details>
+<summary><b>📦 Fedora / RHEL</b></summary>
 
 ```bash
 # Install dependencies
 sudo dnf install gcc openssl-devel sqlite-devel
 
 # Build from source
-git clone https://github.com/sentinelx/sentinelx
+git clone https://github.com/0xhroot/sentinelx
 cd sentinelx
 cargo build --release
 
@@ -818,11 +964,14 @@ sudo cp target/release/sentinelx-backend /usr/bin/
 sudo cp target/release/sentinelx-cli /usr/bin/
 ```
 
-### Docker
+</details>
+
+<details>
+<summary><b>🐳 Docker</b></summary>
 
 ```bash
 # Pull and run
-docker pull ghcr.io/sentinelx/sentinelx:latest
+docker pull ghcr.io/0xhroot/sentinelx:latest
 docker run -d \
   --name sentinelx \
   --cap-add NET_ADMIN \
@@ -831,10 +980,13 @@ docker run -d \
   --cap-add SYSLOG \
   -v sentinelx-data:/var/lib/sentinelx \
   -p 8443:8443 \
-  ghcr.io/sentinelx/sentinelx:latest
+  ghcr.io/0xhroot/sentinelx:latest
 ```
 
-### Docker Compose
+</details>
+
+<details>
+<summary><b>🐳 Docker Compose</b></summary>
 
 ```yaml
 version: "3.8"
@@ -856,11 +1008,14 @@ volumes:
   sentinelx-data:
 ```
 
-### From Source
+</details>
+
+<details>
+<summary><b>🔨 From Source</b></summary>
 
 ```bash
 # Clone
-git clone https://github.com/sentinelx/sentinelx
+git clone https://github.com/0xhroot/sentinelx
 cd sentinelx
 
 # Build (debug)
@@ -877,61 +1032,28 @@ cargo install --path backend
 cargo install --path apps/cli
 ```
 
----
+</details>
 
-## Quick Start
-
-```bash
-# 1. Clone and build
-git clone https://github.com/sentinelx/sentinelx
-cd sentinelx
-cargo build --release
-
-# 2. Start the backend server
-sudo ./target/release/sentinelx-backend --host 0.0.0.0 --port 8443
-
-# 3. In another terminal, run a scan
-sudo ./target/release/sentinelx-cli scan
-
-# 4. Check system status
-sudo ./target/release/sentinelx-cli status
-
-# 5. View the dashboard
-# Open http://localhost:8443 in your browser
-
-# 6. Check threats
-sudo ./target/release/sentinelx-cli threats
-
-# 7. View timeline
-sudo ./target/release/sentinelx-cli timeline
-
-# 8. Enable continuous monitoring
-sudo ./target/release/sentinelx-cli monitor --interval 30
-```
+<br />
 
 ---
 
-## Configuration
+## 🔧 Configuration
 
-SentinelX uses TOML configuration. The default configuration file is located at `/etc/sentinelx/sentinelx.toml`.
+SentinelX uses TOML configuration. The default config is at `/etc/sentinelx/sentinelx.toml`.
 
-### Complete Configuration Reference
+<details>
+<summary><b>📝 Complete Configuration Reference — Click to expand</b></summary>
 
 ```toml
 [general]
-# System hostname (auto-detected if empty)
-hostname = ""
-# Scan interval in seconds for continuous monitoring
-scan_interval_seconds = 60
-# Capture baseline on first start
-baseline_on_start = true
-# Maximum memory usage in MB
-max_memory_mb = 150
-# Maximum CPU usage percentage
-max_cpu_percent = 3.0
+hostname = ""                       # System hostname (auto-detected if empty)
+scan_interval_seconds = 60          # Scan interval for continuous monitoring
+baseline_on_start = true            # Capture baseline on first start
+max_memory_mb = 150                 # Maximum memory usage in MB
+max_cpu_percent = 3.0               # Maximum CPU usage percentage
 
 [detection]
-# Enable/disable specific detection engines
 enabled_detectors = [
     "kernel_integrity",
     "hidden_process",
@@ -942,15 +1064,11 @@ enabled_detectors = [
     "persistence",
     "privilege_escalation",
 ]
-# Minimum severity threshold for alerts
-severity_threshold = "low"
-# Enable MITRE ATT&CK mapping
-mitre_attack_mapping = true
-# Enable evidence collection
-evidence_collection = true
+severity_threshold = "low"          # Minimum severity threshold for alerts
+mitre_attack_mapping = true         # Enable MITRE ATT&CK mapping
+evidence_collection = true          # Enable evidence collection
 
 [monitoring]
-# Enable/disable monitoring for each subsystem
 process = true
 network = true
 module = true
@@ -959,68 +1077,51 @@ syscall = true
 file_integrity = true
 
 [storage]
-# SQLite database path
 database_path = "/var/lib/sentinelx/sentinelx.db"
-# Evidence file storage path
 evidence_path = "/var/lib/sentinelx/evidence"
-# Log file path
 log_path = "/var/log/sentinelx"
-# Data retention in days
 retention_days = 90
-# Maximum events in database
 max_events = 1000000
 
 [api]
-# Enable REST API
 enabled = true
-# API listen host
 host = "127.0.0.1"
-# API listen port
 port = 8443
-# Enable TLS
 tls_enabled = false
-# TLS certificate path
 tls_cert_path = ""
-# TLS key path
 tls_key_path = ""
-# CORS allowed origins
 cors_origins = []
 
 [logging]
-# Log level: trace, debug, info, warn, error
-level = "info"
-# Log format: text, json
-format = "text"
-# Log to file (empty = stdout only)
+level = "info"                      # trace, debug, info, warn, error
+format = "text"                     # text, json
 file_output = ""
-# Use JSON format for file output
 json_format = false
 
 [ebpf]
-# Enable eBPF sensor
 enabled = true
-# eBPF map size
 map_size = 10240
-# Perf buffer pages
 perf_buffer_pages = 64
-# Maximum events per second
 max_events_per_second = 10000
 ```
 
-### Environment Variables
+</details>
 
-| Variable | Default | Description |
-|----------|---------|-------------|
+| Environment Variable | Default | Description |
+|---------------------|---------|-------------|
 | `RUST_LOG` | `info` | Tracing log filter |
 | `SENTINELX_CONFIG` | `/etc/sentinelx/sentinelx.toml` | Configuration file path |
 
+<br />
+
 ---
 
-## CLI Reference
+## 💻 CLI Reference
 
-SentinelX provides 34 CLI commands organized by category.
+SentinelX provides **34 CLI commands** organized by category.
 
-### Detection Commands
+<details>
+<summary><b>🔍 Detection Commands</b></summary>
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -1032,7 +1133,10 @@ SentinelX provides 34 CLI commands organized by category.
 | `processes` | Running processes | `sentinelx-cli processes` |
 | `network` | Active connections | `sentinelx-cli network` |
 
-### Analysis Commands
+</details>
+
+<details>
+<summary><b>📊 Analysis Commands</b></summary>
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -1042,14 +1146,20 @@ SentinelX provides 34 CLI commands organized by category.
 | `threats` | Threat decisions | `sentinelx-cli threats` |
 | `graph` | Correlation graph | `sentinelx-cli graph` |
 
-### Forensics Commands
+</details>
+
+<details>
+<summary><b>🔬 Forensics Commands</b></summary>
 
 | Command | Description | Example |
 |---------|-------------|---------|
 | `forensics` | Forensic snapshot | `sentinelx-cli forensics` |
 | `export` | Export to file | `sentinelx-cli export --format json --output ./export` |
 
-### Response Commands
+</details>
+
+<details>
+<summary><b>🤖 Response Commands</b></summary>
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -1057,7 +1167,10 @@ SentinelX provides 34 CLI commands organized by category.
 | `workflows` | Response workflows | `sentinelx-cli workflows` |
 | `audit` | Response audit log | `sentinelx-cli audit` |
 
-### Telemetry Commands
+</details>
+
+<details>
+<summary><b>📡 Telemetry Commands</b></summary>
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -1068,7 +1181,10 @@ SentinelX provides 34 CLI commands organized by category.
 | `ebpf` | eBPF sensor status | `sentinelx-cli ebpf` |
 | `providers-health` | Provider diagnostics | `sentinelx-cli providers-health` |
 
-### Behavior Commands
+</details>
+
+<details>
+<summary><b>🧠 Behavior Commands</b></summary>
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -1076,7 +1192,10 @@ SentinelX provides 34 CLI commands organized by category.
 | `behavior-profiles` | Behavioral profiles | `sentinelx-cli behavior-profiles` |
 | `behavior-stats` | Behavior statistics | `sentinelx-cli behavior-stats` |
 
-### Intelligence Commands
+</details>
+
+<details>
+<summary><b>🕵️ Intelligence Commands</b></summary>
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -1088,7 +1207,10 @@ SentinelX provides 34 CLI commands organized by category.
 | `yara` | YARA rules | `sentinelx-cli yara` |
 | `sigma` | Sigma rules | `sentinelx-cli sigma` |
 
-### Fleet Commands
+</details>
+
+<details>
+<summary><b>🚀 Fleet Commands</b></summary>
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -1098,25 +1220,29 @@ SentinelX provides 34 CLI commands organized by category.
 | `fleet-policies` | Fleet policies | `sentinelx-cli fleet-policies` |
 | `fleet-actions` | Remote actions | `sentinelx-cli fleet-actions` |
 
-### Config Commands
+</details>
+
+<details>
+<summary><b>⚙️ Config Commands</b></summary>
 
 | Command | Description | Example |
 |---------|-------------|---------|
 | `config` | Show configuration | `sentinelx-cli config` |
 
+</details>
+
+<br />
+
 ---
 
-## REST API
+## 🔌 REST API
 
-SentinelX exposes 86 REST API endpoints organized by category.
+SentinelX exposes **86 REST API endpoints** organized by category.
 
-### Base URL
+**Base URL:** `http://localhost:8443/api`
 
-```
-http://localhost:8443/api
-```
-
-### Core Endpoints
+<details>
+<summary><b>🔗 Core Endpoints</b></summary>
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -1126,7 +1252,10 @@ http://localhost:8443/api
 | `POST` | `/api/scan/{detector}` | Run specific detector |
 | `GET` | `/api/detectors` | List detectors |
 
-### Threat Endpoints
+</details>
+
+<details>
+<summary><b>⚠️ Threat Endpoints</b></summary>
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -1136,7 +1265,10 @@ http://localhost:8443/api
 | `POST` | `/api/threats/{id}/acknowledge` | Acknowledge threat |
 | `POST` | `/api/threats/{id}/resolve` | Resolve threat |
 
-### Detection Endpoints
+</details>
+
+<details>
+<summary><b>🔍 Detection Endpoints</b></summary>
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -1146,7 +1278,10 @@ http://localhost:8443/api
 | `GET` | `/api/kernel/integrity` | Kernel integrity |
 | `GET` | `/api/memory/integrity` | Memory integrity |
 
-### Evidence Endpoints
+</details>
+
+<details>
+<summary><b>📋 Evidence Endpoints</b></summary>
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -1154,7 +1289,10 @@ http://localhost:8443/api
 | `POST` | `/api/evidence/collect` | Collect evidence |
 | `GET` | `/api/evidence/stats` | Evidence statistics |
 
-### Incident Endpoints
+</details>
+
+<details>
+<summary><b>🚨 Incident Endpoints</b></summary>
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -1162,7 +1300,10 @@ http://localhost:8443/api
 | `GET` | `/api/incidents/{id}` | Get incident |
 | `POST` | `/api/incidents/{id}/status` | Update status |
 
-### Response Endpoints
+</details>
+
+<details>
+<summary><b>🤖 Response Endpoints</b></summary>
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -1170,7 +1311,10 @@ http://localhost:8443/api
 | `GET` | `/api/responses/audit` | Response audit log |
 | `GET` | `/api/workflows` | List workflows |
 
-### Telemetry Endpoints
+</details>
+
+<details>
+<summary><b>📡 Telemetry Endpoints</b></summary>
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -1180,7 +1324,10 @@ http://localhost:8443/api
 | `GET` | `/api/telemetry/providers/health` | Provider health |
 | `GET` | `/api/telemetry/stats` | Telemetry statistics |
 
-### Intelligence Endpoints
+</details>
+
+<details>
+<summary><b>🕵️ Intelligence Endpoints</b></summary>
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -1191,7 +1338,10 @@ http://localhost:8443/api
 | `GET` | `/api/intelligence/sigma` | Sigma rules |
 | `GET` | `/api/intelligence/cves` | CVE entries |
 
-### Fleet Endpoints
+</details>
+
+<details>
+<summary><b>🚀 Fleet Endpoints</b></summary>
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -1203,7 +1353,10 @@ http://localhost:8443/api
 | `POST` | `/api/fleet/policies` | Distribute policy |
 | `GET` | `/api/fleet/actions` | Remote actions |
 
-### Example: curl
+</details>
+
+<details>
+<summary><b>💡 Example: curl</b></summary>
 
 ```bash
 # Health check
@@ -1236,13 +1389,15 @@ curl -X POST http://localhost:8443/api/intelligence/iocs \
 curl http://localhost:8443/api/fleet
 ```
 
+</details>
+
+<br />
+
 ---
 
-## Dashboard
+## 📊 Dashboard
 
-SentinelX includes a React + TypeScript web dashboard with 10 monitoring pages.
-
-### Pages
+SentinelX includes a **React + TypeScript** web dashboard with 10 monitoring pages.
 
 | Page | Description |
 |------|-------------|
@@ -1257,8 +1412,6 @@ SentinelX includes a React + TypeScript web dashboard with 10 monitoring pages.
 | **Kernel Integrity** | Kernel memory and structure integrity |
 | **Settings** | Configuration management |
 
-### Building the Dashboard
-
 ```bash
 cd apps/dashboard
 npm install
@@ -1266,13 +1419,14 @@ npm run dev      # Development server (port 5173)
 npm run build    # Production build to dist/
 ```
 
+<br />
+
 ---
 
-## Fleet Management
+## 🚀 Fleet Management
 
-SentinelX supports multi-host security monitoring through its fleet management system.
-
-### Architecture
+<details>
+<summary><b>🏢 Fleet Architecture — Click to expand</b></summary>
 
 ```mermaid
 graph TB
@@ -1308,7 +1462,7 @@ graph TB
     CO --> DB
 ```
 
-### Components
+</details>
 
 | Component | Role |
 |-----------|------|
@@ -1321,25 +1475,25 @@ graph TB
 
 | Message | Direction | Purpose |
 |---------|-----------|---------|
-| `Registration` | Agent -> Coordinator | Register new agent |
-| `RegistrationAck` | Coordinator -> Agent | Confirm registration |
-| `Heartbeat` | Agent -> Coordinator | Periodic health check |
-| `HeartbeatAck` | Coordinator -> Agent | Confirm heartbeat |
-| `Telemetry` | Agent -> Coordinator | Telemetry events |
-| `Incident` | Agent -> Coordinator | Security incidents |
-| `Threat` | Agent -> Coordinator | Threat decisions |
-| `Policy` | Coordinator -> Agent | Distribute policies |
-| `PolicyAck` | Agent -> Coordinator | Confirm policy receipt |
-| `RemoteAction` | Coordinator -> Agent | Execute remote action |
-| `RemoteActionResult` | Agent -> Coordinator | Action result |
+| `Registration` | Agent → Coordinator | Register new agent |
+| `Heartbeat` | Agent → Coordinator | Periodic health check |
+| `Telemetry` | Agent → Coordinator | Telemetry events |
+| `Incident` | Agent → Coordinator | Security incidents |
+| `Threat` | Agent → Coordinator | Threat decisions |
+| `Policy` | Coordinator → Agent | Distribute policies |
+| `RemoteAction` | Coordinator → Agent | Execute remote action |
+| `RemoteActionResult` | Agent → Coordinator | Action result |
+
+<br />
 
 ---
 
-## Security Model
+## 🔒 Security Model
+
+<details>
+<summary><b>🛡️ Trust Model & Least Privilege — Click to expand</b></summary>
 
 ### Trust Model
-
-SentinelX operates with the following trust assumptions:
 
 1. **Root privileges required**: Kernel-level monitoring requires root or specific capabilities
 2. **Trusted bootloader**: The system bootloader and kernel are trusted
@@ -1361,9 +1515,10 @@ CapabilityBoundingSet=CAP_NET_ADMIN CAP_SYS_PTRACE CAP_AUDIT_CONTROL CAP_SYSLOG
 | `CAP_AUDIT_CONTROL` | Audit subsystem access |
 | `CAP_SYSLOG` | Kernel log access |
 
-### Response Safety
+</details>
 
-The response engine implements multiple safety layers:
+<details>
+<summary><b>⚠️ Response Safety Controls — Click to expand</b></summary>
 
 | Safety Control | Description |
 |---------------|-------------|
@@ -1375,7 +1530,10 @@ The response engine implements multiple safety layers:
 | Protected paths | /, /etc, /usr, /boot, /proc, /sys, /dev, /var/run, /run, /tmp |
 | Audit logging | All actions are logged with full context |
 
-### Threat Model
+</details>
+
+<details>
+<summary><b>🎯 Threat Model — Click to expand</b></summary>
 
 | Threat | Mitigation |
 |--------|-----------|
@@ -1388,9 +1546,13 @@ The response engine implements multiple safety layers:
 | Privilege escalation | Capability change detection, setuid monitoring |
 | Network exfiltration | Connection monitoring, hidden socket detection |
 
+</details>
+
+<br />
+
 ---
 
-## Performance
+## ⚡ Performance
 
 ### Benchmark Results
 
@@ -1418,34 +1580,22 @@ The response engine implements multiple safety layers:
 | Disk I/O | Minimal | ~10 MB/s | ~1 MB/s |
 | Network | None | None | None (unless fleet) |
 
-### Optimization
+> [!TIP]
+> The release build uses maximum optimization: LTO, single codegen unit, opt-level 3, stripped symbols, abort on panic.
 
-The release build uses maximum optimization:
-
-```toml
-[profile.release]
-lto = true              # Link-Time Optimization
-codegen-units = 1       # Single codegen unit
-opt-level = 3           # Maximum optimization
-strip = true            # Strip debug symbols
-panic = "abort"         # No unwinding overhead
-```
+<br />
 
 ---
 
-## Testing
+## 🧪 Testing
 
 SentinelX has **696 tests** across all crates.
-
-### Test Categories
 
 | Category | Count | Description |
 |----------|-------|-------------|
 | Unit tests | ~600 | Per-crate tests for individual functions |
 | Integration tests | 10 | Reliability and failure mode tests |
 | Doc tests | ~86 | Documentation examples |
-
-### Running Tests
 
 ```bash
 # Run all tests
@@ -1456,14 +1606,10 @@ cargo test -p sentinelx-telemetry
 
 # Run with output
 cargo test --workspace -- --nocapture
-
-# Run specific test
-cargo test test_database_corruption
 ```
 
-### Integration Test Coverage
-
-The integration tests (`crates/integration-tests/`) cover:
+<details>
+<summary><b>🧪 Integration Test Coverage — Click to expand</b></summary>
 
 1. Database corruption handling
 2. Network disconnection recovery
@@ -1476,7 +1622,10 @@ The integration tests (`crates/integration-tests/`) cover:
 9. Configuration reload
 10. Graceful shutdown
 
-### Fuzz Testing
+</details>
+
+<details>
+<summary><b>🔬 Fuzz Testing — Click to expand</b></summary>
 
 Six fuzz targets in `fuzz/`:
 
@@ -1489,7 +1638,10 @@ Six fuzz targets in `fuzz/`:
 | `fuzz_message_transport` | Message deserialization |
 | `fuzz_response_policy` | Policy evaluation |
 
-### Benchmarks
+</details>
+
+<details>
+<summary><b>🏎️ Benchmarks — Click to expand</b></summary>
 
 ```bash
 # Run all benchmarks
@@ -1502,73 +1654,39 @@ cargo bench --bench analysis_pipeline
 cargo bench --bench telemetry_throughput
 ```
 
+</details>
+
 ### CI Pipeline
 
-Every push runs:
+> [!NOTE]
+> Every push runs: formatting check, clippy linting, all 696 tests, release build, and security audit.
 
-1. `cargo fmt --check` - Formatting
-2. `cargo clippy -- -D warnings` - Linting
-3. `cargo test --workspace` - All 696 tests
-4. `cargo build --release` - Release build
-5. `cargo audit` - Security audit
+<br />
 
 ---
 
-## Development Guide
+## 👨‍💻 Development Guide
 
-### Adding a New Detector
+<details>
+<summary><b>🔧 Extension Points — Click to expand</b></summary>
 
-1. Create a crate in `crates/` implementing `DiscoveryProvider`, `MetadataCollector`, and `ObjectAssessor`
-2. Register the provider in `backend/src/main.rs`
-3. Add the crate to `Cargo.toml` workspace members
-4. Write tests in `#[cfg(test)]` module
-5. Add CLI commands in `apps/cli/src/commands/`
+| Task | Steps |
+|------|-------|
+| **New Detector** | Create crate implementing `DiscoveryProvider`, `MetadataCollector`, `ObjectAssessor` → register in `backend/src/main.rs` → add to workspace → write tests → add CLI commands |
+| **New Assessment Dimension** | Add assessor in `crates/assessment/src/` → implement `ObjectAssessor` trait → register in `create_all_assessors()` → add config |
+| **New Correlation Rule** | Define TOML rule → add to `DEFAULT_RULES` in `crates/correlation/src/lib.rs` → implement logic → write tests |
+| **New Response Action** | Add variant to `ResponseAction` enum → implement in `engine.rs` → add safety checks → write tests |
+| **New Telemetry Provider** | Implement `TelemetryProvider` trait → register in `TelemetryEngine::register_provider()` → add to `ProviderManager` → implement fallback |
+| **New API Endpoint** | Add handler in `backend/src/routes.rs` → register in `router()` → add types → write tests |
+| **New CLI Command** | Add variant to `Commands` enum → implement handler → add help text → write tests |
 
-### Adding a New Assessment Dimension
+</details>
 
-1. Add a new assessor in `crates/assessment/src/`
-2. Implement the `ObjectAssessor` trait
-3. Register in `create_all_assessors()`
-4. Add scoring configuration in `ScoringConfig`
-
-### Adding a New Correlation Rule
-
-1. Define the rule in TOML format
-2. Add to `DEFAULT_RULES` in `crates/correlation/src/lib.rs`
-3. Implement the correlation logic
-4. Write tests
-
-### Adding a New Response Action
-
-1. Add variant to `ResponseAction` enum in `crates/response/src/types.rs`
-2. Implement the action in `crates/response/src/engine.rs`
-3. Add safety checks
-4. Write tests
-
-### Adding a New Telemetry Provider
-
-1. Create a struct implementing `TelemetryProvider` trait
-2. Register in `TelemetryEngine::register_provider()`
-3. Add to `ProviderManager` with capability detection
-4. Implement fallback logic
-
-### Adding a New API Endpoint
-
-1. Add handler function in `backend/src/routes.rs`
-2. Register route in the `router()` function
-3. Add request/response types
-4. Write tests
-
-### Adding a New CLI Command
-
-1. Add command variant to the `Commands` enum in `apps/cli/src/main.rs`
-2. Implement the command handler
-3. Add help text and options
-4. Write tests
+<br />
 
 ---
 
-## Plugin Architecture
+## 🔌 Plugin Architecture
 
 SentinelX uses a trait-based extension model:
 
@@ -1581,65 +1699,28 @@ SentinelX uses a trait-based extension model:
 | Telemetry | `TelemetryProvider` | `telemetry` |
 | Rules | `RuleCondition` (TOML-driven) | `rule_engine` |
 
-### Future Plugin System
+> [!NOTE]
+> **Future Plugin System (v2.0):** WASM-based plugin runtime, dynamic detection plugins, user-defined telemetry providers, custom response action plugins, API for external integrations.
 
-Planned for v2.0:
-
-- WASM-based plugin runtime
-- Dynamic loading of detection plugins
-- User-defined telemetry providers
-- Custom response action plugins
-- API for external integrations
+<br />
 
 ---
 
-## Roadmap
+## 🗺️ Roadmap
 
-### v1.0.0 (Current)
+| Version | Highlights |
+|---------|-----------|
+| **v1.0.0** *(current)* | Evidence-driven pipeline, 7 detection engines, 4 telemetry providers, correlation & incident management, automated response with safety controls, fleet management, REST API (86 endpoints), CLI (34 commands), React dashboard |
+| **v1.1.0** | PostgreSQL support, web-based management UI, automatic rule updates, enhanced MITRE ATT&CK coverage, performance improvements |
+| **v1.2.0** | macOS support, Windows support (limited), container runtime monitoring, Kubernetes integration |
+| **v1.3.0** | Machine learning detection, cloud deployment support, multi-tenant architecture, advanced behavioral analysis |
+| **v2.0.0** | Plugin system (WASM), API v2 with gRPC, distributed telemetry, advanced threat hunting, integration marketplace |
 
-- Evidence-driven pipeline
-- 7 detection engines
-- 4 telemetry providers
-- Correlation and incident management
-- Automated response with safety controls
-- Fleet management
-- REST API (86 endpoints)
-- CLI (34 commands)
-- React dashboard
-
-### v1.1.0
-
-- PostgreSQL support
-- Web-based management UI
-- Automatic rule updates
-- Enhanced MITRE ATT&CK coverage
-- Performance improvements
-
-### v1.2.0
-
-- macOS support
-- Windows support (limited)
-- Container runtime monitoring
-- Kubernetes integration
-
-### v1.3.0
-
-- Machine learning detection
-- Cloud deployment support
-- Multi-tenant architecture
-- Advanced behavioral analysis
-
-### v2.0.0
-
-- Plugin system (WASM)
-- API v2 with gRPC
-- Distributed telemetry
-- Advanced threat hunting
-- Integration marketplace
+<br />
 
 ---
 
-## Comparison With Other Tools
+## ⚖️ Comparison With Other Tools
 
 | Feature | SentinelX | Falco | Wazuh | Velociraptor | Osquery |
 |---------|-----------|-------|-------|--------------|---------|
@@ -1655,11 +1736,14 @@ Planned for v2.0:
 | **Dashboard** | Built-in React | Via Kibana | Built-in | None | None |
 | **License** | GPL-3.0 | Apache-2.0 | GPL-2.0 | Apache-2.0 | Apache-2.0 |
 
-> **Note**: This comparison focuses on architecture and deployment model. Each tool has specific strengths for different use cases. SentinelX differentiates through its evidence-driven pipeline, built-in response engine, and memory-safe implementation.
+> [!NOTE]
+> This comparison focuses on architecture and deployment model. Each tool has specific strengths for different use cases. SentinelX differentiates through its evidence-driven pipeline, built-in response engine, and memory-safe implementation.
+
+<br />
 
 ---
 
-## Screenshots
+## 📸 Screenshots
 
 <!-- Screenshots will be added after the first public release -->
 
@@ -1671,11 +1755,14 @@ Planned for v2.0:
 | Fleet Management | Multi-host agent status |
 | CLI Output | Terminal-based detection results |
 
+<br />
+
 ---
 
-## Frequently Asked Questions
+## ❓ Frequently Asked Questions
 
-### General
+<details>
+<summary><b>General</b></summary>
 
 **Q: What is SentinelX?**
 A: SentinelX is an open-source Linux runtime integrity monitoring and rootkit detection platform. It provides real-time kernel-level telemetry, multi-engine threat detection, automated incident response, and fleet management.
@@ -1686,7 +1773,10 @@ A: Rust provides memory safety without garbage collection, zero-cost abstraction
 **Q: Is SentinelX production-ready?**
 A: SentinelX v1.0.0 is the first stable release. It has 696 tests, comprehensive documentation, and has been hardened through security auditing. It is suitable for production deployment with appropriate testing.
 
-### Installation
+</details>
+
+<details>
+<summary><b>Installation</b></summary>
 
 **Q: What Linux versions are supported?**
 A: Linux kernel 5.8 or later is required for eBPF support. Tested on Ubuntu 20.04+, Debian 11+, Fedora 36+, Arch Linux, and RHEL 9+.
@@ -1697,7 +1787,10 @@ A: Root privileges are required for kernel-level monitoring (eBPF, fanotify, net
 **Q: How much disk space does SentinelX need?**
 A: The binary is approximately 10 MB. The database grows based on events; typical usage is 100-500 MB for 90-day retention.
 
-### Detection
+</details>
+
+<details>
+<summary><b>Detection</b></summary>
 
 **Q: What does SentinelX detect?**
 A: Rootkits, hidden processes, hidden kernel modules, hook detection, memory tampering, file integrity violations, persistence mechanisms, privilege escalation, hidden network connections, and suspicious syscalls.
@@ -1708,7 +1801,10 @@ A: SentinelX uses an evidence-driven pipeline that correlates multiple indicator
 **Q: Does SentinelX support custom detection rules?**
 A: Yes. The `rule_engine` crate supports TOML-defined rules with conditions (Equals, GreaterThan, Regex, And, Or).
 
-### Performance
+</details>
+
+<details>
+<summary><b>Performance</b></summary>
 
 **Q: What is the performance impact?**
 A: Less than 3% CPU and 150 MB memory during active scanning. Idle usage is under 1% CPU and 30 MB memory.
@@ -1716,7 +1812,10 @@ A: Less than 3% CPU and 150 MB memory during active scanning. Idle usage is unde
 **Q: Can SentinelX run continuously?**
 A: Yes. Use `sentinelx-cli monitor --interval 30` for continuous monitoring. The telemetry engine runs in the background with configurable intervals.
 
-### Fleet
+</details>
+
+<details>
+<summary><b>Fleet</b></summary>
 
 **Q: How does fleet management work?**
 A: A central coordinator communicates with endpoint agents via TLS-encrypted connections. Agents send heartbeats, telemetry, and incidents. The coordinator distributes policies and remote actions.
@@ -1724,7 +1823,10 @@ A: A central coordinator communicates with endpoint agents via TLS-encrypted con
 **Q: Is fleet communication encrypted?**
 A: Yes. All fleet communication uses rustls-based TLS with optional mutual TLS (mTLS) certificate verification.
 
-### Security
+</details>
+
+<details>
+<summary><b>Security</b></summary>
 
 **Q: Is SentinelX itself secure?**
 A: SentinelX is written in Rust with minimal unsafe code (52 FFI blocks, all audited). It uses parameterized SQL queries, input validation, and follows security best practices.
@@ -1732,21 +1834,26 @@ A: SentinelX is written in Rust with minimal unsafe code (52 FFI blocks, all aud
 **Q: Can an attacker disable SentinelX?**
 A: The systemd service uses `ProtectSystem=strict`, capability bounding, and system call filtering. An attacker would need root privileges to disable the service.
 
-### Development
+</details>
+
+<details>
+<summary><b>Development</b></summary>
 
 **Q: How can I contribute?**
 A: See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. Areas for contribution include: new detection engines, additional MITRE ATT&CK techniques, documentation, tests, and packaging.
 
 **Q: How do I add a new detection engine?**
-A: Implement the `DiscoveryProvider`, `MetadataCollector`, and `ObjectAssessor` traits, then register the provider in `backend/src/main.rs`. See the [Development Guide](#development-guide).
+A: Implement the `DiscoveryProvider`, `MetadataCollector`, and `ObjectAssessor` traits, then register the provider in `backend/src/main.rs`. See the [Development Guide](#-development-guide).
+
+</details>
+
+<br />
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
 We welcome contributions from the community. See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
-
-### Quick Start
 
 ```bash
 # Fork and clone
@@ -1764,28 +1871,29 @@ cargo fmt --all
 # Commit and push
 git commit -m "feat: add new detection engine"
 git push origin feature/my-feature
-
-# Create a Pull Request
 ```
 
-### Areas for Contribution
+**Areas for Contribution:**
 
-- New detection engines
-- Additional MITRE ATT&CK technique coverage
-- Documentation improvements
-- Test coverage
-- Packaging for additional distributions
-- Dashboard improvements
-- Performance optimizations
-- Bug fixes
+| Area | Description |
+|------|-------------|
+| Detection | New detection engines, MITRE ATT&CK coverage |
+| Documentation | Guides, examples, API docs |
+| Testing | Unit tests, integration tests, fuzz targets |
+| Packaging | Additional distributions |
+| Dashboard | UI/UX improvements |
+| Performance | Optimizations and benchmarks |
+| Bug Fixes | Issues and regressions |
+
+<br />
 
 ---
 
-## License
+## 📄 License
 
 SentinelX is licensed under the [GNU General Public License v3.0 or later](LICENSE).
 
-This means you can:
+You can:
 - Use SentinelX for any purpose
 - Study and modify the source code
 - Distribute copies
@@ -1799,43 +1907,48 @@ Under the terms of the GPL-3.0, you must:
 
 For more information, see [https://www.gnu.org/licenses/gpl-3.0.html](https://www.gnu.org/licenses/gpl-3.0.html).
 
+<br />
+
 ---
 
-## Acknowledgements
+## 🙏 Acknowledgements
 
 ### Libraries
 
-- [Tokio](https://tokio.rs/) - Async runtime
-- [Axum](https://github.com/tokio-rs/axum) - HTTP framework
-- [SQLx](https://github.com/launchbadge/sqlx) - Async SQLite
-- [Serde](https://serde.rs/) - Serialization
-- [Clap](https://github.com/clap-rs/clap) - CLI framework
-- [Aya](https://aya-rs.dev/) - eBPF framework
-- [rustls](https://github.com/rustls/rustls) - TLS implementation
-- [Tracing](https://github.com/tokio-rs/tracing) - Structured logging
-- [Chrono](https://github.com/chronotope/chrono) - Date/time handling
-- [UUID](https://github.com/uuid-rs/uuid) - UUID generation
+[Tokio](https://tokio.rs/) · [Axum](https://github.com/tokio-rs/axum) · [SQLx](https://github.com/launchbadge/sqlx) · [Serde](https://serde.rs/) · [Clap](https://github.com/clap-rs/clap) · [Aya](https://aya-rs.dev/) · [rustls](https://github.com/rustls/rustls) · [Tracing](https://github.com/tokio-rs/tracing) · [Chrono](https://github.com/chronotope/chrono) · [UUID](https://github.com/uuid-rs/uuid)
 
 ### Projects
 
-- [Falco](https://falco.org/) - Cloud-native runtime security
-- [Wazuh](https://wazuh.com/) - Open-source security monitoring
-- [Velociraptor](https://docs.velociraptor.app/) - Endpoint visibility
-- [Osquery](https://osquery.io/) - SQL-powered OS instrumentation
+[Falco](https://falco.org/) · [Wazuh](https://wazuh.com/) · [Velociraptor](https://docs.velociraptor.app/) · [Osquery](https://osquery.io/)
 
 ### Community
 
-- The Rust community for an incredible ecosystem
-- Linux kernel developers for eBPF, fanotify, and netlink
-- Open-source security researchers for threat detection methodologies
-- Contributors to the MITRE ATT&CK framework
+The Rust community for an incredible ecosystem · Linux kernel developers for eBPF, fanotify, and netlink · Open-source security researchers for threat detection methodologies · Contributors to the MITRE ATT&CK framework
+
+<br />
 
 ---
 
 <div align="center">
 
-**SentinelX v1.0.0** | [Documentation](docs/) | [API Reference](examples/api/openapi.yaml) | [Contributing](CONTRIBUTING.md) | [Security Policy](SECURITY.md)
+**[⬆ Back to Top](#sentinelx)**
 
-Built with Rust. Designed for Linux. Secured by evidence.
+---
+
+<a href="https://github.com/0xhroot/sentinelx">
+  <img src="https://raw.githubusercontent.com/0xhroot/sentinelx/main/docs/assets/banner.svg" alt="SentinelX Banner" width="100%" />
+</a>
+<!-- Fallback banner if SVG not available -->
+<img width="100%" height="4" style="background: linear-gradient(90deg, #0097e6, #6c5ce7, #e17055, #00b894); display: block;" alt="" />
+
+**SentinelX v1.0.0** · [Documentation](docs/) · [API Reference](examples/api/openapi.yaml) · [Contributing](CONTRIBUTING.md) · [Security Policy](SECURITY.md)
+
+*Built with Rust. Designed for Linux. Secured by evidence.*
+
+<br />
+
+<a href="https://github.com/0xhroot/sentinelx/stargazers">
+  <img src="https://img.shields.io/github/stars/0xhroot/sentinelx?style=social" alt="Star SentinelX" />
+</a>
 
 </div>
