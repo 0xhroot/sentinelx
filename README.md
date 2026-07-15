@@ -160,7 +160,7 @@
   </tr>
   <tr>
     <td align="center">
-      <img src="screenshot/dashboard-overview.png" alt="Dashboard Overview" width="400" />
+      <img src="screenshot/dashboard.png" alt="Dashboard Overview" width="400" />
       <br />
       <sub>System health, key metrics, recent alerts</sub>
     </td>
@@ -172,18 +172,18 @@
   </tr>
   <tr>
     <td align="center"><b>Threats View</b></td>
-    <td align="center"><b>Architecture Diagram</b></td>
+    <td align="center"><b>Policies View</b></td>
   </tr>
   <tr>
     <td align="center">
-      <img src="screenshot/threats-view.png" alt="Threats View" width="400" />
+      <img src="screenshot/threat-view.png" alt="Threats View" width="400" />
       <br />
       <sub>Active threats with severity & MITRE mapping</sub>
     </td>
     <td align="center">
-      <img src="screenshot/architecture.png" alt="Architecture" width="400" />
+      <img src="screenshot/policies.png" alt="Architecture" width="400" />
       <br />
-      <sub>Full system architecture</sub>
+      <sub>Policies sc </sub>
     </td>
   </tr>
   <tr>
@@ -192,7 +192,7 @@
   </tr>
   <tr>
     <td align="center">
-      <img src="screenshot/fleet-view.png" alt="Fleet View" width="400" />
+      <img src="screenshot/fleet.png" alt="Fleet View" width="400" />
       <br />
       <sub>Multi-host agent status & health</sub>
     </td>
