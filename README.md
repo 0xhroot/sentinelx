@@ -62,7 +62,7 @@
 <div align="center">
 
 <!-- Gradient Separator -->
-<img width="100%" height="3" alt="divider" src="https://raw.githubusercontent.com/0xhroot/sentinelx/main/docs/assets/divider.svg" />
+<!-- <img width="100%" height="3" alt="divider" src="https://raw.githubusercontent.com/0xhroot/sentinelx/main/docs/assets/divider.svg" /> -->
 
 <!-- Fallback gradient if SVG not yet available -->
 <img width="100%" height="3" alt="" style="background: linear-gradient(90deg, #0097e6, #6c5ce7, #e17055, #00b894); display: block;" />
