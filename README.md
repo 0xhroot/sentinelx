@@ -153,9 +153,6 @@
 
 ## 🖥️ Demo
 
-> [!NOTE]
-> Screenshots and GIFs are placeholders. Replace with actual media before the next release.
-
 <table>
   <tr>
     <td align="center"><b>Dashboard Overview</b></td>
@@ -1745,15 +1742,14 @@ SentinelX uses a trait-based extension model:
 
 ## 📸 Screenshots
 
-<!-- Screenshots will be added after the first public release -->
-
 | Screenshot | Description |
 |-----------|-------------|
-| Dashboard Overview | System health, key metrics, recent alerts |
-| Threats View | Active threats with severity and MITRE mapping |
-| Telemetry Feed | Real-time kernel events |
-| Fleet Management | Multi-host agent status |
-| CLI Output | Terminal-based detection results |
+| ![Dashboard](screenshot/dashboard.png) | **Dashboard Overview** — System health, key metrics, recent alerts |
+| ![Threats](screenshot/threat-view.png) | **Threats View** — Active threats with severity and MITRE mapping |
+| ![Telemetry](screenshot/telemetry-feed.png) | **Telemetry Feed** — Real-time kernel events |
+| ![Fleet](screenshot/fleet.png) | **Fleet Management** — Multi-host agent status |
+| ![CLI](screenshot/cli-scan.png) | **CLI Output** — Terminal-based detection results |
+| ![Policies](screenshot/policies.png) | **Response Policies** — Automated response configuration |
 
 <br />
 
