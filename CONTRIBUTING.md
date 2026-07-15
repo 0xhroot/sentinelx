@@ -9,7 +9,7 @@ Please read and follow our [Code of Conduct](CODE_OF_CONDUCT.md) before contribu
 1. Fork the repository on GitHub
 2. Clone your fork locally:
    ```bash
-   git clone https://github.com/<your-username>/sentinelx.git
+   git clone https://github.com/0xhroot/sentinelx.git
    cd sentinelx
    ```
 3. Add the upstream remote:
