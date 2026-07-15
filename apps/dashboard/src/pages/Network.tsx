@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Search, Network as NetworkIcon, ArrowUpDown } from 'lucide-react';
 import { fetchNetwork } from '../api';
 import { NetworkConnection } from '../types';
+import EmptyState from '../components/EmptyState';
 
 type SortKey = 'protocol' | 'state';
 
@@ -16,118 +19,102 @@ export default function Network() {
   }, []);
 
   const handleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortAsc(!sortAsc);
-    } else {
-      setSortKey(key);
-      setSortAsc(true);
-    }
+    if (sortKey === key) setSortAsc(!sortAsc);
+    else { setSortKey(key); setSortAsc(true); }
   };
 
   const sorted = [...connections]
     .filter((c) => {
       if (!search) return true;
       const q = search.toLowerCase();
-      return (
-        c.process_name?.toLowerCase().includes(q) ||
-        c.protocol.toLowerCase().includes(q) ||
-        c.state.toLowerCase().includes(q) ||
-        c.local_addr.ip.toLowerCase().includes(q) ||
-        c.remote_addr?.ip.toLowerCase().includes(q)
-      );
+      return c.process_name?.toLowerCase().includes(q) || c.protocol.toLowerCase().includes(q) ||
+        c.state.toLowerCase().includes(q) || c.local_addr.ip.includes(q) || c.remote_addr?.ip.includes(q);
     })
     .sort((a, b) => {
-      const aVal = a[sortKey];
-      const bVal = b[sortKey];
-      const cmp = String(aVal).localeCompare(String(bVal));
+      const cmp = String(a[sortKey]).localeCompare(String(b[sortKey]));
       return sortAsc ? cmp : -cmp;
     });
 
   const SortHeader = ({ field, label }: { field: SortKey; label: string }) => (
-    <th
-      className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-200 transition-colors select-none text-left"
-      onClick={() => handleSort(field)}
-    >
+    <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider cursor-pointer select-none text-left"
+      style={{ color: 'rgba(255,255,255,0.3)' }} onClick={() => handleSort(field)}>
       <span className="inline-flex items-center gap-1">
         {label}
-        {sortKey === field && <span className="text-blue-400">{sortAsc ? '↑' : '↓'}</span>}
+        {sortKey === field && <span style={{ color: '#60A5FA' }}>{sortAsc ? '↑' : '↓'}</span>}
+        {sortKey !== field && <ArrowUpDown size={10} />}
       </span>
     </th>
   );
 
+  const stateColor = (state: string) => {
+    if (state === 'Established') return 'sx-badge-green';
+    if (state === 'Listen') return 'sx-badge-blue';
+    return 'sx-badge-low';
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-300">
-          Failed to load network data: {error}
-        </div>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          className="rounded-xl px-4 py-3 text-sm"
+          style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: '#F87171' }}>
+          {error}
+        </motion.div>
       )}
-      <div className="flex items-center gap-4">
-        <input
-          type="text"
-          placeholder="Search connections..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="input-field max-w-xs"
-        />
-        <span className="text-sm text-slate-500">
+
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 h-9 px-3 rounded-lg sx-input max-w-xs">
+          <Search size={14} style={{ color: 'rgba(255,255,255,0.25)' }} />
+          <input type="text" placeholder="Search connections..." value={search} onChange={(e) => setSearch(e.target.value)}
+            className="bg-transparent border-none outline-none text-xs flex-1" style={{ color: 'rgba(255,255,255,0.87)' }} />
+        </div>
+        <span className="text-[11px] ml-auto" style={{ color: 'rgba(255,255,255,0.25)' }}>
           {sorted.length} connection{sorted.length !== 1 ? 's' : ''}
         </span>
       </div>
 
-      <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-700/50">
-                <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider text-left">Local</th>
-                <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider text-left">Remote</th>
-                <SortHeader field="protocol" label="Protocol" />
-                <SortHeader field="state" label="State" />
-                <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider text-left">Process</th>
-                <th className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider text-left">PID</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((conn, i) => (
-                <tr key={`${conn.local_addr.port}-${conn.remote_addr?.port}-${conn.remote_addr?.ip}-${i}`} className="table-row">
-                  <td className="px-4 py-3.5 font-mono text-xs text-slate-300">
-                    {conn.local_addr.ip}:{conn.local_addr.port}
-                  </td>
-                  <td className="px-4 py-3.5 font-mono text-xs text-slate-300">
-                    {conn.remote_addr ? `${conn.remote_addr.ip}:${conn.remote_addr.port}` : '-'}
-                  </td>
-                  <td className="px-4 py-3.5 text-slate-300 uppercase text-xs font-medium">{conn.protocol}</td>
-                  <td className="px-4 py-3.5">
-                    <span className={`badge ${
-                      conn.state === 'Established'
-                        ? 'bg-green-500/10 text-green-400 border border-green-500/30'
-                        : conn.state === 'Listen'
-                        ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30'
-                        : 'bg-slate-500/10 text-slate-400 border border-slate-500/30'
-                    }`}>
-                      {conn.state}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5 text-slate-300">
-                    {conn.process_name || '-'}
-                  </td>
-                  <td className="px-4 py-3.5 font-mono text-xs text-slate-400">
-                    {conn.pid || '-'}
-                  </td>
-                </tr>
-              ))}
-              {sorted.length === 0 && (
+      {sorted.length === 0 ? (
+        <EmptyState icon={NetworkIcon} title="No connections" description="No network connections found" />
+      ) : (
+        <div className="sx-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="sx-table">
+              <thead>
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-slate-500">
-                    No connections found
-                  </td>
+                  <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-left" style={{ color: 'rgba(255,255,255,0.3)' }}>Local</th>
+                  <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-left" style={{ color: 'rgba(255,255,255,0.3)' }}>Remote</th>
+                  <SortHeader field="protocol" label="Proto" />
+                  <SortHeader field="state" label="State" />
+                  <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-left" style={{ color: 'rgba(255,255,255,0.3)' }}>Process</th>
+                  <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-left" style={{ color: 'rgba(255,255,255,0.3)' }}>PID</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {sorted.map((conn, i) => (
+                  <motion.tr key={`${conn.local_addr.port}-${conn.remote_addr?.port}-${i}`}
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.01 }}>
+                    <td className="font-mono text-[11px]" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                      {conn.local_addr.ip}:{conn.local_addr.port}
+                    </td>
+                    <td className="font-mono text-[11px]" style={{ color: conn.remote_addr ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.15)' }}>
+                      {conn.remote_addr ? `${conn.remote_addr.ip}:${conn.remote_addr.port}` : '—'}
+                    </td>
+                    <td>
+                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                        style={{ background: 'rgba(139,92,246,0.1)', color: '#A78BFA' }}>
+                        {conn.protocol.toUpperCase()}
+                      </span>
+                    </td>
+                    <td><span className={stateColor(conn.state)}>{conn.state}</span></td>
+                    <td className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>{conn.process_name || '—'}</td>
+                    <td className="font-mono text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{conn.pid || '—'}</td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

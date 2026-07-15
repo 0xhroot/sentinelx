@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Search, Cpu, ArrowUpDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { fetchProcesses } from '../api';
 import { ProcessInfo } from '../types';
+import EmptyState from '../components/EmptyState';
 
 type SortKey = 'pid' | 'name' | 'user' | 'memory_usage_kb';
 
@@ -10,29 +13,22 @@ export default function Processes() {
   const [sortAsc, setSortAsc] = useState(false);
   const [search, setSearch] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<number | null>(null);
 
   useEffect(() => {
     fetchProcesses().then(setProcesses).catch((e) => setError(String(e)));
   }, []);
 
   const handleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortAsc(!sortAsc);
-    } else {
-      setSortKey(key);
-      setSortAsc(false);
-    }
+    if (sortKey === key) setSortAsc(!sortAsc);
+    else { setSortKey(key); setSortAsc(false); }
   };
 
   const sorted = [...processes]
     .filter((p) => {
       if (!search) return true;
       const q = search.toLowerCase();
-      return (
-        p.name.toLowerCase().includes(q) ||
-        p.user.toLowerCase().includes(q) ||
-        String(p.pid).includes(q)
-      );
+      return p.name.toLowerCase().includes(q) || p.user.toLowerCase().includes(q) || String(p.pid).includes(q);
     })
     .sort((a, b) => {
       const aVal = a[sortKey];
@@ -43,90 +39,108 @@ export default function Processes() {
 
   const SortHeader = ({ field, label }: { field: SortKey; label: string }) => (
     <th
-      className="px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-200 transition-colors select-none"
+      className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider cursor-pointer select-none text-left"
+      style={{ color: 'rgba(255,255,255,0.3)' }}
       onClick={() => handleSort(field)}
     >
       <span className="inline-flex items-center gap-1">
         {label}
-        {sortKey === field && (
-          <span className="text-blue-400">{sortAsc ? '↑' : '↓'}</span>
-        )}
+        {sortKey === field && <span style={{ color: '#60A5FA' }}>{sortAsc ? '↑' : '↓'}</span>}
+        {sortKey !== field && <ArrowUpDown size={10} />}
       </span>
     </th>
   );
 
+  const maxMem = Math.max(...sorted.map((p) => p.memory_usage_kb), 1);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-300">
-          Failed to load processes: {error}
-        </div>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          className="rounded-xl px-4 py-3 text-sm"
+          style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: '#F87171' }}>
+          {error}
+        </motion.div>
       )}
-      <div className="flex items-center gap-4">
-        <input
-          type="text"
-          placeholder="Search processes..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="input-field max-w-xs"
-        />
-        <span className="text-sm text-slate-500">
+
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 h-9 px-3 rounded-lg sx-input max-w-xs">
+          <Search size={14} style={{ color: 'rgba(255,255,255,0.25)' }} />
+          <input type="text" placeholder="Search processes..." value={search} onChange={(e) => setSearch(e.target.value)}
+            className="bg-transparent border-none outline-none text-xs flex-1" style={{ color: 'rgba(255,255,255,0.87)' }} />
+        </div>
+        <span className="text-[11px] ml-auto" style={{ color: 'rgba(255,255,255,0.25)' }}>
           {sorted.length} process{sorted.length !== 1 ? 'es' : ''}
         </span>
       </div>
 
-      <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-700/50">
-                <SortHeader field="pid" label="PID" />
-                <SortHeader field="name" label="Name" />
-                <SortHeader field="user" label="User" />
-                <SortHeader field="memory_usage_kb" label="Memory" />
-                <th className="px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</th>
-                <th className="px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Started</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((proc) => (
-                <tr key={proc.pid} className="table-row">
-                  <td className="px-5 py-3.5 font-mono text-slate-300">{proc.pid}</td>
-                  <td className="px-5 py-3.5">
-                    <div className="font-medium text-slate-100">{proc.name}</div>
-                    {proc.binary_path && (
-                      <div className="text-xs text-slate-500 mt-0.5 max-w-sm truncate">{proc.binary_path}</div>
-                    )}
-                  </td>
-                  <td className="px-5 py-3.5 text-slate-300">{proc.user}</td>
-                  <td className="px-5 py-3.5 font-mono text-xs text-slate-300">
-                    {proc.memory_usage_kb > 1024
-                      ? `${(proc.memory_usage_kb / 1024).toFixed(1)} MB`
-                      : `${proc.memory_usage_kb} KB`}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <span className={`badge ${
-                      proc.status === 'Running' ? 'bg-green-500/10 text-green-400 border border-green-500/30' : 'bg-slate-500/10 text-slate-400 border border-slate-500/30'
-                    }`}>
-                      {proc.status}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3.5 text-slate-400 whitespace-nowrap">
-                    {new Date(proc.start_time).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-              {sorted.length === 0 && (
+      {sorted.length === 0 ? (
+        <EmptyState icon={Cpu} title="No processes found" description="No processes match your search" />
+      ) : (
+        <div className="sx-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="sx-table">
+              <thead>
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-slate-500">
-                    No processes found
-                  </td>
+                  <SortHeader field="pid" label="PID" />
+                  <SortHeader field="name" label="Name" />
+                  <SortHeader field="user" label="User" />
+                  <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-left" style={{ color: 'rgba(255,255,255,0.3)' }}>Memory</th>
+                  <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-left" style={{ color: 'rgba(255,255,255,0.3)' }}>Status</th>
+                  <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-left" style={{ color: 'rgba(255,255,255,0.3)' }}>Started</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {sorted.map((proc) => {
+                  const isOpen = expanded === proc.pid;
+                  const memPercent = (proc.memory_usage_kb / maxMem) * 100;
+                  return (
+                    <motion.tr
+                      key={proc.pid}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="cursor-pointer"
+                      onClick={() => setExpanded(isOpen ? null : proc.pid)}
+                    >
+                      <td className="font-mono text-xs" style={{ color: '#60A5FA' }}>{proc.pid}</td>
+                      <td>
+                        <div className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>{proc.name}</div>
+                        {proc.binary_path && (
+                          <div className="text-[10px] truncate max-w-[200px] mt-0.5" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                            {proc.binary_path}
+                          </div>
+                        )}
+                      </td>
+                      <td className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>{proc.user}</td>
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                            <div className="h-full rounded-full" style={{
+                              width: `${memPercent}%`,
+                              background: memPercent > 80 ? '#EF4444' : memPercent > 50 ? '#EAB308' : '#3B82F6',
+                            }} />
+                          </div>
+                          <span className="text-[10px] font-mono w-12 text-right" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                            {proc.memory_usage_kb > 1024 ? `${(proc.memory_usage_kb / 1024).toFixed(1)}M` : `${proc.memory_usage_kb}K`}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={proc.status === 'Running' ? 'sx-badge-green' : 'sx-badge-low'}>
+                          {proc.status}
+                        </span>
+                      </td>
+                      <td className="text-[10px] whitespace-nowrap" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                        {new Date(proc.start_time).toLocaleTimeString()}
+                      </td>
+                    </motion.tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

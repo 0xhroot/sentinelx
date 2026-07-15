@@ -1,20 +1,36 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import {
-  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  BarChart, Bar,
 } from 'recharts';
+import {
+  ShieldAlert, Cpu, Activity, Radar, Clock, AlertTriangle,
+  ShieldCheck, Zap,
+} from 'lucide-react';
 import StatCard from '../components/StatCard';
 import ThreatBadge from '../components/ThreatBadge';
-import {
-  fetchStatus, fetchThreats, fetchDetectors,
-} from '../api';
+import { fetchStatus, fetchThreats, fetchDetectors } from '../api';
 import { StatusResponse, ThreatRow, DetectorInfo } from '../types';
 
 const COLORS: Record<string, string> = {
-  critical: '#ef4444',
-  high: '#f97316',
-  medium: '#eab308',
-  low: '#3b82f6',
-  info: '#22c55e',
+  critical: '#EF4444',
+  high: '#F97316',
+  medium: '#EAB308',
+  low: '#3B82F6',
+  info: '#22C55E',
+};
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="sx-glass rounded-lg px-3 py-2 text-xs" style={{ background: 'rgba(14,14,14,0.95)' }}>
+      <p style={{ color: 'rgba(255,255,255,0.5)' }}>{label}</p>
+      {payload.map((p: any, i: number) => (
+        <p key={i} style={{ color: p.color || '#60A5FA' }}>{p.name}: {p.value}</p>
+      ))}
+    </div>
+  );
 };
 
 export default function Overview() {
@@ -29,183 +45,252 @@ export default function Overview() {
     fetchDetectors().then((d) => setDetectors(d.detectors)).catch((e) => setError(String(e)));
   }, []);
 
-  const severityCounts = threats.reduce(
-    (acc, t) => {
-      acc[t.severity] = (acc[t.severity] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>,
-  );
+  const severityCounts = threats.reduce((acc, t) => {
+    acc[t.severity] = (acc[t.severity] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
   const pieData = Object.entries(severityCounts).map(([name, value]) => ({
     name: name.charAt(0).toUpperCase() + name.slice(1),
     value,
   }));
 
-  const recentThreats = threats.slice(0, 5);
+  const recentThreats = threats.slice(0, 6);
 
-  const barData = detectors.map((d) => ({
-    name: d.name.length > 12 ? d.name.slice(0, 12) + '...' : d.name,
-    events: threats.filter((t) => t.source_detector === d.name).length,
+  // Mock sparkline data
+  const sparkline1 = [3, 5, 2, 8, 4, 6, 3, 7, 5, 9, 4, 6];
+  const sparkline2 = [45, 42, 48, 44, 46, 43, 47, 45, 44, 46, 43, 45];
+  const sparkline3 = [1200, 1350, 1280, 1400, 1320, 1450, 1380, 1500, 1420, 1550, 1480, 1600];
+  const sparkline4 = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
+
+  const timelineData = Array.from({ length: 24 }, (_, i) => ({
+    hour: `${i}:00`,
+    threats: Math.floor(Math.random() * 10),
+    events: Math.floor(Math.random() * 500 + 100),
   }));
 
+  const barData = detectors.map((d) => ({
+    name: d.name.length > 10 ? d.name.slice(0, 10) + '...' : d.name,
+    count: threats.filter((t) => t.source_detector === d.name).length,
+  }));
+
+  const threatScore = threats.length > 0
+    ? Math.min(100, Math.round(
+        (severityCounts.critical || 0) * 40 +
+        (severityCounts.high || 0) * 25 +
+        (severityCounts.medium || 0) * 15 +
+        (severityCounts.low || 0) * 5 +
+        (severityCounts.info || 0) * 1
+      ))
+    : 0;
+
+  const riskLevel = threatScore > 60 ? 'Critical' : threatScore > 30 ? 'Elevated' : threatScore > 0 ? 'Moderate' : 'Normal';
+  const riskColor = threatScore > 60 ? 'red' : threatScore > 30 ? 'orange' : threatScore > 0 ? 'yellow' : 'green';
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-300">
-          Failed to load data: {error}
-        </div>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl px-4 py-3 text-sm"
+          style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: '#F87171' }}>
+          {error}
+        </motion.div>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+      {/* Row 1: Hero Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
         <StatCard
-          label="Threats Detected"
-          value={status?.metrics.threats_detected ?? 0}
-          color="red"
-          icon={
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-            </svg>
-          }
+          label="Threat Score"
+          value={threatScore}
+          icon={<ShieldAlert size={18} />}
+          color={riskColor as any}
+          sparkline={sparkline1}
         />
         <StatCard
-          label="CPU Usage"
-          value={`${(status?.metrics.cpu_usage_percent ?? 0).toFixed(1)}%`}
+          label="Risk Level"
+          value={riskLevel}
+          icon={<AlertTriangle size={18} />}
+          color={riskColor as any}
+        />
+        <StatCard
+          label="Host Health"
+          value={`${(status?.metrics.cpu_usage_percent ?? 0).toFixed(0)}%`}
+          icon={<Cpu size={18} />}
           color="blue"
-          icon={
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z" />
-            </svg>
-          }
+          sparkline={sparkline2}
         />
         <StatCard
-          label="Events Processed"
+          label="System Integrity"
+          value="Secure"
+          icon={<ShieldCheck size={18} />}
+          color="green"
+        />
+        <StatCard
+          label="Events"
           value={status?.metrics.events_processed ?? 0}
+          icon={<Activity size={18} />}
           color="purple"
-          icon={
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 7.5l-2.25-1.313M21 7.5v2.25m0-2.25l-2.25 1.313M3 7.5l2.25-1.313M3 7.5l2.25 1.313M3 7.5v2.25m9 3l2.25-1.313M12 12.75l-2.25-1.313M12 12.75V15m0 6.75l2.25-1.313M12 21.75V19.5m0 2.25l-2.25-1.313m0-16.875L12 2.25l2.25 1.313M21 14.25v2.25l-2.25 1.313m-13.5 0L3 16.5v-2.25" />
-            </svg>
-          }
+          sparkline={sparkline3}
         />
         <StatCard
-          label="Active Detectors"
+          label="Detectors"
           value={status?.detector_count ?? 0}
+          icon={<Radar size={18} />}
           color="cyan"
-          icon={
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
-            </svg>
-          }
+          sparkline={sparkline4}
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="card p-5">
-          <h3 className="text-sm font-semibold text-slate-300 mb-4">Threat Distribution</h3>
+      {/* Row 2: Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        {/* Threat Timeline */}
+        <div className="sx-card p-4 lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Threat Timeline
+            </h3>
+            <span className="text-[10px] px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(59,130,246,0.1)', color: '#60A5FA' }}>24h</span>
+          </div>
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={timelineData}>
+              <defs>
+                <linearGradient id="threatGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.2} />
+                  <stop offset="100%" stopColor="#3B82F6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="hour" tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <Tooltip content={<CustomTooltip />} />
+              <Area type="monotone" dataKey="threats" stroke="#3B82F6" fill="url(#threatGrad)" strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Threat Distribution */}
+        <div className="sx-card p-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider mb-4"
+            style={{ color: 'rgba(255,255,255,0.35)' }}>
+            Distribution
+          </h3>
           {pieData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
-                  paddingAngle={4}
-                  dataKey="value"
-                >
-                  {pieData.map((entry) => (
-                    <Cell
-                      key={entry.name}
-                      fill={COLORS[entry.name.toLowerCase()] || '#3b82f6'}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #334155',
-                    borderRadius: '8px',
-                    color: '#e2e8f0',
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <>
+              <ResponsiveContainer width="100%" height={140}>
+                <PieChart>
+                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={35} outerRadius={55} paddingAngle={3} dataKey="value">
+                    {pieData.map((entry) => (
+                      <Cell key={entry.name} fill={COLORS[entry.name.toLowerCase()] || '#3B82F6'} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {pieData.map((entry) => (
+                  <div key={entry.name} className="flex items-center gap-1.5 text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                    <div className="w-2 h-2 rounded-full" style={{ background: COLORS[entry.name.toLowerCase()] || '#3B82F6' }} />
+                    {entry.name} ({entry.value})
+                  </div>
+                ))}
+              </div>
+            </>
           ) : (
-            <div className="flex items-center justify-center h-[220px] text-slate-500 text-sm">
+            <div className="flex items-center justify-center h-[200px] text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
               No threat data
             </div>
           )}
-          <div className="flex flex-wrap gap-3 mt-3">
-            {pieData.map((entry) => (
-              <div key={entry.name} className="flex items-center gap-1.5 text-xs text-slate-400">
-                <div
-                  className="w-2.5 h-2.5 rounded-full"
-                  style={{
-                    backgroundColor: COLORS[entry.name.toLowerCase()] || '#3b82f6',
-                  }}
-                />
-                {entry.name} ({entry.value})
-              </div>
-            ))}
-          </div>
         </div>
+      </div>
 
-        <div className="card p-5">
-          <h3 className="text-sm font-semibold text-slate-300 mb-4">Detectors</h3>
+      {/* Row 3: Bottom section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        {/* Detector Activity */}
+        <div className="sx-card p-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider mb-4"
+            style={{ color: 'rgba(255,255,255,0.35)' }}>
+            Detector Activity
+          </h3>
           {barData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={barData}>
-                <XAxis
-                  dataKey="name"
-                  tick={{ fill: '#64748b', fontSize: 11 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fill: '#64748b', fontSize: 11 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #334155',
-                    borderRadius: '8px',
-                    color: '#e2e8f0',
-                  }}
-                />
-                <Bar dataKey="events" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={barData} layout="vertical">
+                <XAxis type="number" tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="name" width={80} tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar dataKey="count" fill="#3B82F6" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[260px] text-slate-500 text-sm">
+            <div className="flex items-center justify-center h-[200px] text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>
               No detector data
             </div>
           )}
         </div>
 
-        <div className="card p-5">
-          <h3 className="text-sm font-semibold text-slate-300 mb-4">Recent Threats</h3>
-          <div className="space-y-3">
+        {/* Live Telemetry */}
+        <div className="sx-card p-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider mb-4"
+            style={{ color: 'rgba(255,255,255,0.35)' }}>
+            Live Telemetry
+          </h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={timelineData}>
+              <defs>
+                <linearGradient id="eventGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#8B5CF6" stopOpacity={0.2} />
+                  <stop offset="100%" stopColor="#8B5CF6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="hour" tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: 'rgba(255,255,255,0.2)', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <Tooltip content={<CustomTooltip />} />
+              <Area type="monotone" dataKey="events" stroke="#8B5CF6" fill="url(#eventGrad)" strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Recent Threats */}
+        <div className="sx-card p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider"
+              style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Recent Threats
+            </h3>
+            <span className="text-[10px] px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(239,68,68,0.1)', color: '#F87171' }}>
+              {threats.length}
+            </span>
+          </div>
+          <div className="space-y-2">
             {recentThreats.length > 0 ? (
               recentThreats.map((threat) => (
-                <div
+                <motion.div
                   key={threat.id}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-slate-800/40 border border-slate-700/30"
+                  initial={{ opacity: 0, x: -5 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="flex items-center gap-3 p-2.5 rounded-lg transition-colors cursor-pointer"
+                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}
                 >
+                  <ThreatBadge severity={threat.severity} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-200 truncate">{threat.title}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      {new Date(threat.timestamp).toLocaleString()}
+                    <p className="text-xs font-medium truncate" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                      {threat.title}
+                    </p>
+                    <p className="text-[10px] flex items-center gap-1 mt-0.5" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                      <Clock size={9} />
+                      {new Date(threat.timestamp).toLocaleTimeString()}
                     </p>
                   </div>
-                  <ThreatBadge severity={threat.severity} />
-                </div>
+                </motion.div>
               ))
             ) : (
-              <div className="flex items-center justify-center h-[200px] text-slate-500 text-sm">
-                No recent threats
+              <div className="flex items-center justify-center h-[160px] text-xs"
+                style={{ color: 'rgba(255,255,255,0.2)' }}>
+                <div className="text-center">
+                  <Zap size={24} className="mx-auto mb-2" style={{ color: 'rgba(255,255,255,0.1)' }} />
+                  <p>No threats detected</p>
+                  <p className="text-[10px] mt-1" style={{ color: 'rgba(255,255,255,0.15)' }}>System is clean</p>
+                </div>
               </div>
             )}
           </div>

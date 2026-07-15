@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Clock, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { fetchTimeline } from '../api';
 
 interface TimelineEvent {
@@ -16,25 +18,18 @@ interface TimelineEvent {
 }
 
 const severityColor: Record<string, string> = {
-  critical: 'bg-red-500',
-  high: 'bg-orange-500',
-  medium: 'bg-yellow-500',
-  low: 'bg-blue-500',
-  info: 'bg-green-500',
-};
-
-const severityRing: Record<string, string> = {
-  critical: 'ring-red-500/30',
-  high: 'ring-orange-500/30',
-  medium: 'ring-yellow-500/30',
-  low: 'ring-blue-500/30',
-  info: 'ring-green-500/30',
+  critical: '#EF4444',
+  high: '#F97316',
+  medium: '#EAB308',
+  low: '#3B82F6',
+  info: '#22C55E',
 };
 
 export default function Timeline() {
   const [entries, setEntries] = useState<TimelineEvent[]>([]);
   const [filter, setFilter] = useState('all');
   const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<number | null>(null);
 
   useEffect(() => {
     fetchTimeline().then((data) => setEntries(data as unknown as TimelineEvent[])).catch((e) => setError(String(e)));
@@ -42,74 +37,123 @@ export default function Timeline() {
 
   const filtered = filter === 'all' ? entries : entries.filter((e) => e.event.severity === filter);
 
+  const filters = ['all', 'critical', 'high', 'medium', 'low', 'info'];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-300">
-          Failed to load timeline: {error}
-        </div>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          className="rounded-xl px-4 py-3 text-sm"
+          style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: '#F87171' }}>
+          {error}
+        </motion.div>
       )}
+
       <div className="flex items-center gap-3">
-        {['all', 'critical', 'high', 'medium', 'low', 'info'].map((level) => (
-          <button
-            key={level}
-            onClick={() => setFilter(level)}
-            className={`px-3 py-1.5 text-sm rounded-lg font-medium transition-colors ${
-              filter === level
-                ? 'bg-blue-600 text-white'
-                : 'bg-slate-800/50 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
-            }`}
-          >
-            {level === 'all' ? 'All' : level.charAt(0).toUpperCase() + level.slice(1)}
-          </button>
-        ))}
-        <span className="text-sm text-slate-500 ml-auto">
+        <div className="flex items-center gap-1 p-0.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          {filters.map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className="px-2.5 py-1 rounded-md text-[11px] font-medium transition-all"
+              style={{
+                background: filter === f ? 'rgba(59,130,246,0.15)' : 'transparent',
+                color: filter === f ? '#60A5FA' : 'rgba(255,255,255,0.35)',
+              }}
+            >
+              {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
+            </button>
+          ))}
+        </div>
+        <span className="text-[11px] ml-auto" style={{ color: 'rgba(255,255,255,0.25)' }}>
           {filtered.length} event{filtered.length !== 1 ? 's' : ''}
         </span>
       </div>
 
       <div className="relative">
-        <div className="absolute left-5 top-0 bottom-0 w-px bg-slate-700/50" />
+        {/* Timeline line */}
+        <div className="absolute left-[18px] top-0 bottom-0 w-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
 
         <div className="space-y-1">
-          {filtered.map((entry, i) => (
-            <div key={`${entry.event.id}-${i}`} className="relative flex items-start gap-4 pl-12 py-3 group">
-              <div
-                className={`absolute left-3.5 top-4 w-3 h-3 rounded-full ring-4 ${
-                  severityColor[entry.event.severity] || 'bg-slate-500'
-                } ${severityRing[entry.event.severity] || 'ring-slate-500/30'}`}
-              />
+          {filtered.map((entry, i) => {
+            const color = severityColor[entry.event.severity] || 'rgba(255,255,255,0.2)';
+            const isOpen = expanded === i;
+            return (
+              <motion.div
+                key={`${entry.event.id}-${i}`}
+                initial={{ opacity: 0, x: -5 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.02 }}
+                className="relative pl-10 py-1"
+              >
+                {/* Dot */}
+                <div
+                  className="absolute left-[14px] top-3.5 w-[9px] h-[9px] rounded-full z-10"
+                  style={{ background: color, boxShadow: `0 0 8px ${color}44` }}
+                />
 
-              <div className="flex-1 card p-4 group-hover:border-slate-600/50 transition-colors">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs text-slate-500 font-mono">{entry.event.category}</span>
-                      <span className="text-xs text-slate-600">&middot;</span>
-                      <span className="text-xs text-slate-500">{entry.event.source_detector}</span>
-                    </div>
-                    <h4 className="text-sm font-medium text-slate-200">{entry.event.title}</h4>
-                    <p className="text-xs text-slate-400 mt-1">{entry.event.description}</p>
-                    {entry.related_pids.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {entry.related_pids.map((pid) => (
-                          <span key={pid} className="text-xs bg-slate-800/60 text-slate-400 px-2 py-0.5 rounded">
-                            PID: {pid}
-                          </span>
-                        ))}
+                <div
+                  className="sx-card overflow-hidden cursor-pointer transition-all"
+                  onClick={() => setExpanded(isOpen ? null : i)}
+                >
+                  <div className="flex items-center gap-3 p-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+                          style={{ background: `${color}15`, color }}>
+                          {entry.event.severity}
+                        </span>
+                        <span className="text-[10px] font-mono" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                          {entry.event.category}
+                        </span>
+                        <span style={{ color: 'rgba(255,255,255,0.1)' }}>·</span>
+                        <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                          {entry.event.source_detector}
+                        </span>
                       </div>
-                    )}
+                      <p className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                        {entry.event.title}
+                      </p>
+                    </div>
+                    <span className="text-[10px] whitespace-nowrap" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                      {new Date(entry.timestamp).toLocaleTimeString()}
+                    </span>
+                    {isOpen ? <ChevronUp size={12} style={{ color: 'rgba(255,255,255,0.2)' }} /> : <ChevronDown size={12} style={{ color: 'rgba(255,255,255,0.2)' }} />}
                   </div>
-                  <span className="text-xs text-slate-500 whitespace-nowrap">
-                    {new Date(entry.timestamp).toLocaleString()}
-                  </span>
+
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      className="px-3 pb-3"
+                      style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
+                    >
+                      <p className="text-xs leading-relaxed mt-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                        {entry.event.description}
+                      </p>
+                      {entry.related_pids.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {entry.related_pids.map((pid) => (
+                            <span key={pid} className="text-[10px] font-mono px-1.5 py-0.5 rounded"
+                              style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)' }}>
+                              PID {pid}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
                 </div>
-              </div>
-            </div>
-          ))}
+              </motion.div>
+            );
+          })}
+
           {filtered.length === 0 && (
-            <div className="flex items-center justify-center py-20 text-slate-500 text-sm">
-              No timeline events
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <Clock size={32} className="mx-auto mb-3" style={{ color: 'rgba(255,255,255,0.08)' }} />
+                <p className="text-sm" style={{ color: 'rgba(255,255,255,0.25)' }}>No timeline events</p>
+              </div>
             </div>
           )}
         </div>

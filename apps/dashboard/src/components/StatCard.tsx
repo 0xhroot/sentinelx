@@ -1,43 +1,77 @@
 import { ReactNode } from 'react';
+import { motion } from 'framer-motion';
 
 interface StatCardProps {
   label: string;
   value: string | number;
   icon: ReactNode;
+  color?: 'blue' | 'cyan' | 'purple' | 'green' | 'yellow' | 'orange' | 'red';
   trend?: { value: number; isUp: boolean };
-  color?: string;
+  sparkline?: number[];
 }
 
-export default function StatCard({ label, value, icon, trend, color = 'blue' }: StatCardProps) {
-  const colorMap: Record<string, string> = {
-    blue: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-    red: 'bg-red-500/10 text-red-400 border-red-500/20',
-    orange: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-    green: 'bg-green-500/10 text-green-400 border-green-500/20',
-    yellow: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-    purple: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-    cyan: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-  };
+const colorMap = {
+  blue: { bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.15)', text: '#60A5FA' },
+  cyan: { bg: 'rgba(6,182,212,0.08)', border: 'rgba(6,182,212,0.15)', text: '#22D3EE' },
+  purple: { bg: 'rgba(139,92,246,0.08)', border: 'rgba(139,92,246,0.15)', text: '#A78BFA' },
+  green: { bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.15)', text: '#4ADE80' },
+  yellow: { bg: 'rgba(234,179,8,0.08)', border: 'rgba(234,179,8,0.15)', text: '#FACC15' },
+  orange: { bg: 'rgba(249,115,22,0.08)', border: 'rgba(249,115,22,0.15)', text: '#FB923C' },
+  red: { bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.15)', text: '#F87171' },
+};
+
+export default function StatCard({ label, value, icon, color = 'blue', trend, sparkline }: StatCardProps) {
+  const c = colorMap[color];
 
   return (
-    <div className="card card-hover p-5">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="sx-card-hover group relative overflow-hidden p-5"
+    >
       <div className="flex items-start justify-between">
-        <div>
-          <p className="stat-label">{label}</p>
-          <p className="stat-value mt-1 text-white">{value}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            {label}
+          </p>
+          <p className="mt-2 text-2xl font-bold tracking-tight" style={{ color: 'rgba(255,255,255,0.92)' }}>
+            {value}
+          </p>
+          {trend && (
+            <div className="mt-2 flex items-center gap-1.5 text-xs">
+              <span style={{ color: trend.isUp ? '#4ADE80' : '#F87171' }}>
+                {trend.isUp ? '↑' : '↓'} {Math.abs(trend.value)}%
+              </span>
+              <span style={{ color: 'rgba(255,255,255,0.25)' }}>vs last hour</span>
+            </div>
+          )}
         </div>
-        <div className={`flex items-center justify-center w-10 h-10 rounded-lg border ${colorMap[color] || colorMap.blue}`}>
-          {icon}
+        <div
+          className="flex items-center justify-center w-10 h-10 rounded-xl transition-transform group-hover:scale-110"
+          style={{ background: c.bg, border: `1px solid ${c.border}` }}
+        >
+          <div style={{ color: c.text }}>{icon}</div>
         </div>
       </div>
-      {trend && (
-        <div className="mt-3 flex items-center gap-1 text-sm">
-          <span className={trend.isUp ? 'text-green-400' : 'text-red-400'}>
-            {trend.isUp ? '↑' : '↓'} {Math.abs(trend.value)}%
-          </span>
-          <span className="text-slate-500">vs last hour</span>
+      {sparkline && sparkline.length > 0 && (
+        <div className="mt-4 h-8 flex items-end gap-px">
+          {sparkline.map((val, i) => {
+            const max = Math.max(...sparkline);
+            const height = max > 0 ? (val / max) * 100 : 0;
+            return (
+              <div
+                key={i}
+                className="flex-1 rounded-sm transition-all duration-300"
+                style={{
+                  height: `${Math.max(height, 8)}%`,
+                  background: `linear-gradient(to top, ${c.text}22, ${c.text}44)`,
+                }}
+              />
+            );
+          })}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

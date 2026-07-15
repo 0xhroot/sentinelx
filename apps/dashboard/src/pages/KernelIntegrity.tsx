@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Lock, CheckCircle2, XCircle } from 'lucide-react';
 import { fetchKernelIntegrity, KernelIntegrityResponse } from '../api';
 
 export default function KernelIntegrity() {
@@ -11,81 +13,65 @@ export default function KernelIntegrity() {
 
   const passedCount = status ? status.checks.filter((c) => c.passed).length : 0;
   const totalChecks = status ? status.checks.length : 0;
-  const overallStatus = totalChecks > 0 && passedCount === totalChecks
-    ? 'secure'
-    : passedCount > 0
-    ? 'warning'
-    : 'insecure';
+  const overallStatus = totalChecks > 0 && passedCount === totalChecks ? 'SECURE' : passedCount > 0 ? 'WARNING' : 'INSECURE';
+  const overallColor = totalChecks > 0 && passedCount === totalChecks ? '#4ADE80' : passedCount > 0 ? '#FACC15' : '#F87171';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-sm text-red-300">
-          Failed to load kernel integrity data: {error}
-        </div>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          className="rounded-xl px-4 py-3 text-sm"
+          style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: '#F87171' }}>
+          {error}
+        </motion.div>
       )}
-      <div className="card p-6">
-        <div className="flex items-center justify-between mb-6">
+
+      <div className="sx-card p-5">
+        <div className="flex items-center justify-between mb-5">
           <div>
-            <h3 className="text-lg font-semibold text-white">Kernel Security Posture</h3>
-            <p className="text-sm text-slate-400 mt-1">
-              {passedCount}/{totalChecks} checks passed
-            </p>
+            <h3 className="text-base font-semibold" style={{ color: 'rgba(255,255,255,0.92)' }}>Kernel Security Posture</h3>
+            <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>{passedCount}/{totalChecks} checks passed</p>
           </div>
-          <div className={`px-4 py-2 rounded-lg text-sm font-semibold ${
-            overallStatus === 'secure'
-              ? 'bg-green-500/10 text-green-400 border border-green-500/30'
-              : overallStatus === 'warning'
-              ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30'
-              : 'bg-red-500/10 text-red-400 border border-red-500/30'
-          }`}>
-            {overallStatus.toUpperCase()}
-          </div>
+          <span className="sx-badge text-xs font-bold" style={{ background: `${overallColor}12`, color: overallColor, border: `1px solid ${overallColor}33` }}>
+            {overallStatus}
+          </span>
         </div>
 
-        <div className="w-full bg-slate-700/30 rounded-full h-2 mb-6">
-          <div
-            className="bg-gradient-to-r from-green-500 to-emerald-400 h-2 rounded-full transition-all duration-500"
-            style={{ width: `${totalChecks > 0 ? (passedCount / totalChecks) * 100 : 0}%` }}
+        <div className="w-full h-2 rounded-full overflow-hidden mb-6" style={{ background: 'rgba(255,255,255,0.04)' }}>
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${totalChecks > 0 ? (passedCount / totalChecks) * 100 : 0}%` }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="h-full rounded-full"
+            style={{ background: `linear-gradient(90deg, ${overallColor}, ${overallColor}88)` }}
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {status?.checks.map((check) => (
-            <div
-              key={check.name}
-              className={`flex items-center gap-4 p-4 rounded-xl border transition-colors ${
-                check.passed
-                  ? 'bg-green-500/5 border-green-500/20'
-                  : 'bg-red-500/5 border-red-500/20'
-              }`}
-            >
-              <div className={`flex items-center justify-center w-10 h-10 rounded-lg ${
-                check.passed
-                  ? 'bg-green-500/10 text-green-400'
-                  : 'bg-red-500/10 text-red-400'
-              }`}>
-                {check.passed ? (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {status?.checks.map((check, i) => (
+            <motion.div key={check.name}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="flex items-center gap-3 p-3 rounded-xl"
+              style={{
+                background: check.passed ? 'rgba(34,197,94,0.04)' : 'rgba(239,68,68,0.04)',
+                border: `1px solid ${check.passed ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)'}`,
+              }}>
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0"
+                style={{ background: check.passed ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' }}>
+                {check.passed ? <CheckCircle2 size={14} style={{ color: '#4ADE80' }} /> : <XCircle size={14} style={{ color: '#F87171' }} />}
               </div>
               <div>
-                <p className={`text-sm font-medium ${check.passed ? 'text-green-300' : 'text-red-300'}`}>
-                  {check.name}
-                </p>
-                <p className="text-xs text-slate-500 mt-0.5">{check.detail}</p>
+                <p className="text-xs font-medium" style={{ color: check.passed ? '#4ADE80' : '#F87171' }}>{check.name}</p>
+                <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.25)' }}>{check.detail}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
           {(!status || status.checks.length === 0) && (
-            <div className="col-span-2 text-center py-8 text-slate-500 text-sm">
-              No kernel integrity data available
+            <div className="col-span-2 text-center py-12">
+              <Lock size={32} className="mx-auto mb-3" style={{ color: 'rgba(255,255,255,0.08)' }} />
+              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.2)' }}>No kernel integrity data</p>
             </div>
           )}
         </div>
