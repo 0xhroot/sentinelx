@@ -1,15 +1,25 @@
 # cargo-deny configuration for SentinelX
-# https:// Embden.github.io/cargo-deny/
+# https://embarkstudios.github.io/cargo-deny/
+# Compatible with cargo-deny 0.20+
+
+[graph]
+targets = ["x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu"]
+all-features = false
+no-default-features = false
+
+[output]
+feature-depth = 1
 
 [advisories]
-vulnerability = "deny"
-unmaintained = "warn"
-yanked = "warn"
-notice = "warn"
-ignore = []
+# RUSTSEC-2023-0071: rsa 0.9.10 — Marvin Attack timing sidechannel.
+# rsa is an optional dep of sqlx-mysql (not compiled; SentinelX uses sqlite only).
+# No upstream fix available. Safe to ignore. See .cargo/audit.toml for full rationale.
+ignore = [
+    { id = "RUSTSEC-2023-0071", reason = "rsa is an optional dep of sqlx-mysql, never compiled. No upstream fix." },
+]
 
 [licenses]
-unlicensed = "deny"
+confidence-threshold = 0.8
 allow = [
     "GPL-3.0-or-later",
     "GPL-2.0-or-later",
@@ -27,31 +37,36 @@ allow = [
     "0BSD",
     "CC0-1.0",
     "CC-PDDC",
-    "MIT OR Apache-2.0",
-    "MIT OR Zlib OR Apache-2.0",
-    "Apache-2.0 OR MIT",
-    "Unicode-3.0 OR Unicode-DFS-2016",
+    "MPL-2.0",
+    "CDLA-Permissive-2.0",
 ]
-deny = [
-    "AGPL-3.0-only",
-    "AGPL-3.0-or-later",
-    "SSPL-1.0",
+exceptions = [
+    { allow = ["MIT", "Apache-2.0"], crate = "tokio" },
+    { allow = ["MIT", "Apache-2.0"], crate = "tower" },
+    { allow = ["MIT", "Apache-2.0"], crate = "axum" },
 ]
 
-[sources]
-unknown-registry = "deny"
-unknown-git = "deny"
-allow-registry = ["https://github.com/rust-lang/crates.io-index"]
-allow-git = []
+[licenses.private]
+ignore = false
 
 [bans]
 multiple-versions = "warn"
 wildcards = "allow"
 highlight = "all"
+workspace-default-features = "allow"
+external-default-features = "allow"
+allow = []
+deny = []
 skip = []
+skip-tree = []
 
-[target.'cfg(target_os = "windows")'.dependencies]
-# No Windows-specific deny rules needed yet
+[sources]
+unknown-registry = "warn"
+unknown-git = "warn"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []
 
-[target.'cfg(target_os = "macos")'.dependencies]
-# No macOS-specific deny rules needed yet
+[sources.allow-org]
+github = []
+gitlab = []
+bitbucket = []

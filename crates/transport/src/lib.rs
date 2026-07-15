@@ -1,6 +1,4 @@
 use std::collections::HashMap;
-use std::fs;
-use std::io::BufReader;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
@@ -9,8 +7,9 @@ use std::time::Duration;
 use bytes::BytesMut;
 use flate2::read::{GzDecoder, GzEncoder};
 use flate2::Compression;
-use rustls::pki_types::CertificateDer;
+use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 use rustls::ServerConfig;
+use rustls_pki_types::pem::PemObject;
 use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
@@ -400,14 +399,16 @@ where
 async fn load_server_tls(
     config: &TlsConfig,
 ) -> std::result::Result<TlsAcceptor, Box<dyn std::error::Error>> {
-    let cert_file = fs::File::open(&config.cert_path)?;
-    let mut cert_reader = BufReader::new(cert_file);
-    let certs: Vec<CertificateDer<'static>> =
-        rustls_pemfile::certs(&mut cert_reader).collect::<std::result::Result<Vec<_>, _>>()?;
+    let certs: Vec<CertificateDer<'static>> = CertificateDer::pem_file_iter(&config.cert_path)
+        .map_err(|e| format!("Failed to read cert file: {e}"))?
+        .collect::<std::result::Result<Vec<_>, _>>()
+        .map_err(|e| format!("Failed to parse certificates: {e}"))?;
 
-    let key_file = fs::File::open(&config.key_path)?;
-    let mut key_reader = BufReader::new(key_file);
-    let key = rustls_pemfile::private_key(&mut key_reader)?.ok_or("No private key found")?;
+    let key = PrivateKeyDer::pem_file_iter(&config.key_path)
+        .map_err(|e| format!("Failed to read key file: {e}"))?
+        .next()
+        .ok_or("No private key found")?
+        .map_err(|e| format!("Failed to parse private key: {e}"))?;
 
     let server_config = ServerConfig::builder()
         .with_no_client_auth()
